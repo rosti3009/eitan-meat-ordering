@@ -23,7 +23,7 @@ eitan-meat/
 Open `data/products.js` and edit:
 ```js
 const BUSINESS_CONFIG = {
-  phone: "972501234567",  // ← Replace with real number (no +, no spaces)
+  phone: "972504340274",  // ← Replace with real number (no +, no spaces)
   ...
 };
 ```
