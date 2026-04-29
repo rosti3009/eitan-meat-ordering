@@ -936,7 +936,6 @@
     </button>
   </div>
 </div>
-
 <!-- CHECKOUT SCREEN -->
 <div id="checkout-overlay" role="dialog" aria-label="פרטי הזמנה" aria-modal="true">
   <div class="checkout-header">
@@ -954,10 +953,12 @@
       <label class="field-label" for="f-name">שם מלא *</label>
       <input class="field-input" id="f-name" type="text" placeholder="ישראל ישראלי" autocomplete="name" />
     </div>
+
     <div class="field-wrap">
       <label class="field-label" for="f-phone">טלפון *</label>
       <input class="field-input" id="f-phone" type="tel" placeholder="050-0000000" autocomplete="tel" inputmode="tel" />
     </div>
+
     <div class="field-wrap">
       <label class="field-label" for="f-city">עיר / אזור *</label>
       <input class="field-input" id="f-city" type="text" placeholder="אילת" autocomplete="address-level2" />
@@ -987,15 +988,18 @@
     </div>
 
     <div class="gold-divider"></div>
+
     <div style="font-size:12px;color:var(--white-dim);text-align:center;line-height:1.6;padding-bottom:10px">
-      לחיצה על ״שליחה לוואטסאפ״ תפתח שיחת וואטסאפ<br/>עם פרטי ההזמנה המלאים
+      לחיצה על ״שלח הזמנה להדפסה״ תשמור את ההזמנה במערכת<br/>
+      ותיצור קובץ מוכן להדפסה בדרייב
     </div>
 
   </div>
+
   <div class="checkout-fixed-footer">
-    <button class="whatsapp-btn" onclick="sendWhatsApp()">
-      <span class="wa-icon">💬</span>
-      שלח הזמנה בוואטסאפ
+    <button class="whatsapp-btn" onclick="sendOrderToDrive()">
+      <span class="wa-icon">📄</span>
+      שלח הזמנה להדפסה
     </button>
   </div>
 </div>
@@ -1003,10 +1007,10 @@
 <!-- SUCCESS -->
 <div id="success-screen">
   <div class="success-icon">✅</div>
-  <div class="success-title">ההזמנה נשלחה!</div>
+  <div class="success-title">ההזמנה התקבלה!</div>
   <div class="success-sub">
-    ההזמנה שלך נשלחה לאיתן מעדני בשר.<br/>
-    נחזור אליך בהקדם לאישור.
+    ההזמנה נשמרה במערכת ונוצר קובץ להדפסה.<br/>
+    נחזור אליך בהקדם לאישור סופי.
   </div>
   <button class="success-new-btn" onclick="resetOrder()">הזמנה חדשה</button>
 </div>
@@ -1019,6 +1023,8 @@
 
 <!-- APP LOGIC -->
 <script>
+  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw7S2iPPETjUu7Gszt3ozdmSmLC5kT1LVDAxbpXS0QJ5fpmRaChFkSuYLUNTdF6Az6jcw/exec";
+
   // ─── State ─────────────────────────────────────
   const cart = {}; // { productId: quantity }
   let currentCat = CATEGORIES[0].id;
@@ -1033,7 +1039,6 @@
     const cutoffDay  = BUSINESS_CONFIG.orderCutoffDay;
     const cutoffHour = BUSINESS_CONFIG.orderCutoffHour;
 
-    // Closed if: today is cutoff day AFTER cutoff time, or it's cutoff day+1 (Wed) before next order window reopens
     const isClosed = (
       (day === cutoffDay && (hour > cutoffHour || (hour === cutoffHour && min >= 0))) ||
       (day === (cutoffDay + 1) % 7)
@@ -1043,7 +1048,7 @@
       const banner = document.getElementById('closed-banner');
       const sub    = document.getElementById('closed-sub-txt');
       banner.classList.remove('hidden');
-      sub.textContent = `הזמנות לוואטסאפ סגורות – ניתן להזמין למשלוח הבא (${BUSINESS_CONFIG.deliveryDay})`;
+      sub.textContent = `הזמנות סגורות – ניתן להזמין למשלוח הבא (${BUSINESS_CONFIG.deliveryDay})`;
     }
   }
 
@@ -1063,7 +1068,6 @@
     currentCat = id;
     renderCats();
     renderProducts();
-    // Scroll to top of products
     document.getElementById('products-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
@@ -1125,11 +1129,13 @@
   function changeQty(id, delta) {
     const el = document.getElementById(`qty-${id}`);
     if (!el) return;
+
     let v = parseInt(el.textContent) + delta;
     if (v < 1) v = 1;
     if (v > 20) v = 20;
+
     el.textContent = v;
-    // If already in cart, update
+
     if (cart[id]) {
       cart[id] = v;
       updateCartUI();
@@ -1140,9 +1146,11 @@
   function addToCart(id) {
     const prod = PRODUCTS.find(p => p.id === id);
     if (!prod) return;
+
     const qtyEl = document.getElementById(`qty-${id}`);
     const qty   = qtyEl ? parseInt(qtyEl.textContent) : 1;
-    cart[id]    = qty;
+
+    cart[id] = qty;
     updateCartUI();
 
     const btn = document.getElementById(`add-btn-${id}`);
@@ -1150,17 +1158,20 @@
       btn.textContent = '✓ בסל';
       btn.classList.add('added');
     }
+
     showToast(`${prod.name} נוסף לסל ✓`);
   }
 
   // ─── Cart UI ───────────────────────────────────
   function updateCartUI() {
-    const ids    = Object.keys(cart).filter(id => cart[id] > 0);
-    const total  = ids.reduce((sum, id) => {
+    const ids = Object.keys(cart).filter(id => cart[id] > 0);
+
+    const total = ids.reduce((sum, id) => {
       const p = PRODUCTS.find(x => x.id === id);
       return p ? sum + p.price * cart[id] : sum;
     }, 0);
-    const count  = ids.length;
+
+    const count = ids.length;
 
     const badge = document.getElementById('cart-badge');
     const fab   = document.getElementById('cart-fab');
@@ -1176,6 +1187,7 @@
       fab.classList.remove('has-items');
       label.textContent = 'סל';
     }
+
     document.getElementById('cart-total-display').textContent = `₪${total}`;
   }
 
@@ -1186,6 +1198,7 @@
     document.getElementById('cart-drawer').classList.add('open');
     document.body.style.overflow = 'hidden';
   }
+
   function closeCart() {
     document.getElementById('cart-overlay').classList.remove('open');
     document.getElementById('cart-drawer').classList.remove('open');
@@ -1209,6 +1222,7 @@
     wrap.innerHTML = ids.map(id => {
       const p = PRODUCTS.find(x => x.id === id);
       if (!p) return '';
+
       return `
         <div class="cart-item">
           <img class="ci-img" src="${p.image}" alt="${p.name}" loading="lazy"
@@ -1229,12 +1243,17 @@
 
   function updateCartQty(id, delta) {
     cart[id] = (cart[id] || 0) + delta;
+
     if (cart[id] <= 0) {
       delete cart[id];
-      // Reset add button
+
       const btn = document.getElementById(`add-btn-${id}`);
-      if (btn) { btn.textContent = '+ הוסף'; btn.classList.remove('added'); }
+      if (btn) {
+        btn.textContent = '+ הוסף';
+        btn.classList.remove('added');
+      }
     }
+
     updateCartUI();
     renderCartItems();
   }
@@ -1242,21 +1261,29 @@
   // ─── Checkout ──────────────────────────────────
   function goToCheckout() {
     const ids = Object.keys(cart).filter(id => cart[id] > 0);
-    if (!ids.length) { showToast('הסל ריק 🛒'); return; }
+
+    if (!ids.length) {
+      showToast('הסל ריק 🛒');
+      return;
+    }
+
     closeCart();
     renderOrderSummary();
     loadSavedDetails();
+
     document.getElementById('checkout-overlay').classList.add('open');
     document.body.style.overflow = 'hidden';
   }
+
   function closeCheckout() {
     document.getElementById('checkout-overlay').classList.remove('open');
     document.body.style.overflow = '';
   }
 
   function renderOrderSummary() {
-    const box  = document.getElementById('order-summary-box');
-    const ids  = Object.keys(cart).filter(id => cart[id] > 0);
+    const box = document.getElementById('order-summary-box');
+    const ids = Object.keys(cart).filter(id => cart[id] > 0);
+
     const total = ids.reduce((sum, id) => {
       const p = PRODUCTS.find(x => x.id === id);
       return p ? sum + p.price * cart[id] : sum;
@@ -1289,19 +1316,24 @@
       phone: document.getElementById('f-phone').value,
       city:  document.getElementById('f-city').value,
     };
-    try { localStorage.setItem('eitan_customer', JSON.stringify(d)); } catch(e) {}
+
+    try {
+      localStorage.setItem('eitan_customer', JSON.stringify(d));
+    } catch(e) {}
   }
+
   function loadSavedDetails() {
     try {
       const d = JSON.parse(localStorage.getItem('eitan_customer') || '{}');
+
       if (d.name)  document.getElementById('f-name').value  = d.name;
       if (d.phone) document.getElementById('f-phone').value = d.phone;
       if (d.city)  document.getElementById('f-city').value  = d.city;
     } catch(e) {}
   }
 
-  // ─── WhatsApp ──────────────────────────────────
-  function sendWhatsApp() {
+  // ─── Send Order To Google Drive ──────────────────
+  async function sendOrderToDrive() {
     const name  = document.getElementById('f-name').value.trim();
     const phone = document.getElementById('f-phone').value.trim();
     const city  = document.getElementById('f-city').value.trim();
@@ -1315,47 +1347,68 @@
     saveDetails();
 
     const ids = Object.keys(cart).filter(id => cart[id] > 0);
-    const total = ids.reduce((sum, id) => {
-      const p = PRODUCTS.find(x => x.id === id);
-      return p ? sum + p.price * cart[id] : sum;
-    }, 0);
 
-    const typeLabel = orderType === 'pickup' ? 'איסוף עצמי 🏪' : 'משלוח 🚚';
-    const date = new Date().toLocaleDateString('he-IL', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
-
-    let msg = `🥩 *הזמנה חדשה – איתן מעדני בשר*\n`;
-    msg += `━━━━━━━━━━━━━━━\n`;
-    msg += `📋 *פרטי לקוח*\n`;
-    msg += `שם: ${name}\n`;
-    msg += `טלפון: ${phone}\n`;
-    msg += `עיר: ${city}\n`;
-    msg += `סוג: ${typeLabel}\n`;
-    msg += `━━━━━━━━━━━━━━━\n`;
-    msg += `🛒 *פריטים*\n`;
-
-    ids.forEach(id => {
-      const p = PRODUCTS.find(x => x.id === id);
-      if (p) msg += `• ${p.name} × ${cart[id]} — ~₪${p.price * cart[id]}\n`;
-    });
-
-    msg += `━━━━━━━━━━━━━━━\n`;
-    msg += `💰 *סה״כ משוער: ₪${total}*\n`;
-    msg += `⚠️ המחיר הסופי נקבע לאחר שקילה בפועל\n`;
-
-    if (notes) {
-      msg += `━━━━━━━━━━━━━━━\n`;
-      msg += `📝 הערות: ${notes}\n`;
+    if (!ids.length) {
+      showToast('הסל ריק 🛒');
+      return;
     }
 
-    msg += `━━━━━━━━━━━━━━━\n`;
-    msg += `🕐 ${date}`;
+    const items = ids.map(id => {
+      const p = PRODUCTS.find(x => x.id === id);
 
-    const encoded = encodeURIComponent(msg);
-    const waUrl   = `https://wa.me/${BUSINESS_CONFIG.phone}?text=${encoded}`;
+      return {
+        id: p.id,
+        name: p.name,
+        quantity: cart[id],
+        unit: p.unit,
+        price: p.price,
+        lineTotal: p.price * cart[id]
+      };
+    });
 
-    window.open(waUrl, '_blank');
-    closeCheckout();
-    showSuccess();
+    const total = items.reduce((sum, item) => sum + item.lineTotal, 0);
+    const typeLabel = orderType === 'pickup' ? 'איסוף עצמי' : 'משלוח';
+
+    const orderData = {
+      customer: {
+        name: name,
+        phone: phone,
+        city: city,
+        orderType: typeLabel,
+        notes: notes
+      },
+      items: items,
+      total: total,
+      source: "אתר הזמנות איתן מעדני בשר",
+      createdAt: new Date().toISOString()
+    };
+
+    const btn = document.querySelector('.whatsapp-btn');
+    const oldText = btn.innerHTML;
+
+    btn.innerHTML = '<span class="wa-icon">⏳</span> שולח הזמנה...';
+    btn.disabled = true;
+
+    try {
+      await fetch(GOOGLE_SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: {
+          "Content-Type": "text/plain;charset=utf-8"
+        },
+        body: JSON.stringify(orderData)
+      });
+
+      closeCheckout();
+      showSuccess();
+
+    } catch (err) {
+      console.error(err);
+      showToast('שגיאה בשליחת ההזמנה. נסה שוב ⚠️');
+    } finally {
+      btn.innerHTML = oldText;
+      btn.disabled = false;
+    }
   }
 
   function showSuccess() {
@@ -1363,20 +1416,24 @@
   }
 
   function resetOrder() {
-    // Clear cart
     Object.keys(cart).forEach(k => delete cart[k]);
+
     updateCartUI();
     renderProducts();
+
     document.getElementById('success-screen').classList.remove('open');
     document.body.style.overflow = '';
   }
 
   // ─── Toast ─────────────────────────────────────
   let toastTimer;
+
   function showToast(msg) {
     const t = document.getElementById('toast');
+
     t.textContent = msg;
     t.classList.add('show');
+
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
   }
