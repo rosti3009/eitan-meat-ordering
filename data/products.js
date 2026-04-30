@@ -90,7 +90,17 @@ const PRODUCTS = [
     vip: true,
     badge: "🔥 חם",
   },
-
+{
+  id: "kobiut-asado",
+  category: "beef",
+  name: "קוביות אסאדו",
+  description: "קוביות אסאדו איכותיות לבישול ארוך, קדירה, חמין ותבשילים עשירים",
+  price: 99,
+  unit: "ק\"ג",
+  image: "image/kobiut-asado.jpeg",
+  vip: false,
+  badge: "חדש",
+},
   // ─── עוף ────────────────────────────────────────────────
   {
     id: "chicken-breast",
