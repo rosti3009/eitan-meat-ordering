@@ -1361,18 +1361,23 @@
   }
 
   // ─── Send to Google Drive (Apps Script) ────────
-  async function sendToDrive(orderData) {
-    try {
-      await fetch(GOOGLE_SCRIPT_URL, {
-        method:  'POST',
-        mode:    'no-cors',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body:    JSON.stringify(orderData)
-      });
-    } catch (err) {
-      console.warn('Drive send failed:', err);
-    }
+async function sendToDrive(orderData) {
+  try {
+    const res = await fetch(GOOGLE_SCRIPT_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(orderData)
+    });
+
+    const text = await res.text();
+    console.log("תגובה מהשרת:", text);
+
+  } catch (err) {
+    console.error('שגיאה בשליחה ל-Drive:', err);
   }
+}
 
   // ─── Print-to-PDF (Hebrew support) ─────────────
   function downloadPDF(orderData) {
