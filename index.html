@@ -1332,7 +1332,7 @@
   }
 
   // ─── Google Apps Script URL ────────────────────
-  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwyQhApc0MElLksQziTBdWj4_4wpUSHPsIbD_wZ53iRjPBPdG4CSRrU84wX922izz_3/exec";
+  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwyQhApc0ME1LksQziTBdWj4_4wpUSHPsIbD_wZ53iRjPBPdG4CSRrU84wX922izz_3/exec";
 
   // ─── Build order data object ───────────────────
   function buildOrderData(name, phone, city, notes) {
@@ -1361,23 +1361,27 @@
   }
 
   // ─── Send to Google Drive (Apps Script) ────────
-async function sendToDrive(orderData) {
-  try {
-    const res = await fetch(GOOGLE_SCRIPT_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(orderData)
-    });
+  async function sendToDrive(orderData) {
+    try {
+      console.log("שולח ל-Apps Script:", orderData);
 
-    const text = await res.text();
-    console.log("תגובה מהשרת:", text);
+      await fetch(GOOGLE_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8'
+        },
+        body: JSON.stringify(orderData)
+      });
 
-  } catch (err) {
-    console.error('שגיאה בשליחה ל-Drive:', err);
+      console.log("הבקשה נשלחה ל-Apps Script");
+      return true;
+
+    } catch (err) {
+      console.error('שגיאה בשליחה ל-Drive:', err);
+      return false;
+    }
   }
-}
 
   // ─── Print-to-PDF (Hebrew support) ─────────────
   function downloadPDF(orderData) {
@@ -1547,9 +1551,9 @@ async function sendToDrive(orderData) {
     try {
       const orderData = buildOrderData(name, phone, city, notes);
 
-      // Open print window (PDF) + send to Drive in parallel
+      // Open print window (PDF) + send to Drive
       downloadPDF(orderData);
-      sendToDrive(orderData); // fire and forget
+      await sendToDrive(orderData);
 
       closeCheckout();
       showSuccess();
