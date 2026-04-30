@@ -745,7 +745,7 @@
     }
     .whatsapp-btn {
       width: 100%;
-      background: linear-gradient(135deg, #1DA851, #128C3A);
+      background: linear-gradient(135deg, var(--red-light), var(--red-deep));
       color: #fff;
       border-radius: 14px;
       padding: 16px;
@@ -755,11 +755,12 @@
       align-items: center;
       justify-content: center;
       gap: 10px;
-      box-shadow: 0 4px 20px rgba(29,168,81,0.4);
+      box-shadow: var(--shadow-btn);
       transition: transform 0.15s;
       -webkit-tap-highlight-color: transparent;
     }
     .whatsapp-btn:active { transform: scale(0.98); }
+    .whatsapp-btn:disabled { opacity: 0.6; }
     .wa-icon { font-size: 22px; }
 
     /* ═══════════════════════════════════════════
@@ -990,16 +991,16 @@
     <div class="gold-divider"></div>
 
     <div style="font-size:12px;color:var(--white-dim);text-align:center;line-height:1.6;padding-bottom:10px">
-      לחיצה על ״שלח הזמנה להדפסה״ תשמור את ההזמנה במערכת<br/>
-      ותיצור קובץ מוכן להדפסה בדרייב
+      לחיצה על ״הורד הזמנה כ-PDF״ תיצור קובץ PDF מוכן<br/>
+      להדפסה ישירות במכשיר שלך
     </div>
 
   </div>
 
   <div class="checkout-fixed-footer">
-    <button class="whatsapp-btn" onclick="sendOrderToDrive()">
+    <button class="whatsapp-btn" onclick="generateOrderPDF()">
       <span class="wa-icon">📄</span>
-      שלח הזמנה להדפסה
+      הורד הזמנה כ-PDF
     </button>
   </div>
 </div>
@@ -1018,13 +1019,14 @@
 <!-- TOAST -->
 <div id="toast"></div>
 
+<!-- jsPDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <!-- DATA -->
 <script src="data/products.js"></script>
 
 <!-- APP LOGIC -->
 <script>
-  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw4-qEIg7FVSmYuEu6XTOgfoHU3IKu5YHQCfri9xZ3eG1kHZcFg_Q7oqo71vHF4_O7w/exec";
-
   // ─── State ─────────────────────────────────────
   const cart = {}; // { productId: quantity }
   let currentCat = CATEGORIES[0].id;
@@ -1332,8 +1334,200 @@
     } catch(e) {}
   }
 
-  // ─── Send Order To Google Drive ──────────────────
-  async function sendOrderToDrive() {
+  // ─── Google Apps Script URL ────────────────────
+  // ← הדבק כאן את ה-URL לאחר פרסום הסקריפט ב-Google
+  const GOOGLE_SCRIPT_URL = "PASTE_YOUR_APPS_SCRIPT_URL_HERE";
+
+  // ─── Build order data object ───────────────────
+  function buildOrderData(name, phone, city, notes) {
+    const ids = Object.keys(cart).filter(id => cart[id] > 0);
+    const items = ids.map(id => {
+      const p = PRODUCTS.find(x => x.id === id);
+      return {
+        id:        p.id,
+        name:      p.name,
+        quantity:  cart[id],
+        unit:      p.unit,
+        price:     p.price,
+        lineTotal: p.price * cart[id]
+      };
+    });
+    const total = items.reduce((s, i) => s + i.lineTotal, 0);
+    return {
+      customer: {
+        name,
+        phone,
+        city,
+        orderType: orderType === 'pickup' ? 'איסוף עצמי' : 'משלוח',
+        notes
+      },
+      items,
+      total,
+      createdAt: new Date().toISOString()
+    };
+  }
+
+  // ─── Send order JSON to Google Apps Script ─────
+  async function sendToDrive(orderData) {
+    try {
+      await fetch(GOOGLE_SCRIPT_URL, {
+        method:  'POST',
+        mode:    'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body:    JSON.stringify(orderData)
+      });
+    } catch (err) {
+      console.warn('Drive send failed (non-critical):', err);
+    }
+  }
+
+  // ─── Build & download PDF locally ──────────────
+  function downloadPDF(orderData) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+    const pageW    = 210;
+    const margin   = 18;
+    const contentW = pageW - margin * 2;
+    let y = 0;
+
+    const setFont = (size, style = 'normal') => {
+      doc.setFontSize(size);
+      doc.setFont('helvetica', style);
+    };
+    const hline = (yPos, color = [60, 60, 60]) => {
+      doc.setDrawColor(...color);
+      doc.setLineWidth(0.3);
+      doc.line(margin, yPos, pageW - margin, yPos);
+    };
+
+    // ── header ───────────────────────────────────
+    doc.setFillColor(139, 26, 26);
+    doc.rect(0, 0, pageW, 28, 'F');
+    setFont(18, 'bold');
+    doc.setTextColor(201, 152, 58);
+    doc.text('Eitan Meat Delicacies', pageW / 2, 12, { align: 'center' });
+    setFont(10);
+    doc.setTextColor(200, 191, 176);
+    doc.text('Eilat  |  Premium Butcher', pageW / 2, 20, { align: 'center' });
+    y = 36;
+
+    // ── title + date ─────────────────────────────
+    setFont(14, 'bold');
+    doc.setTextColor(30, 30, 30);
+    doc.text('ORDER CONFIRMATION', pageW / 2, y, { align: 'center' });
+    y += 6;
+    const now = new Date(orderData.createdAt);
+    setFont(9);
+    doc.setTextColor(120, 110, 100);
+    doc.text(now.toLocaleString('he-IL', { timeZone: 'Asia/Jerusalem' }), pageW / 2, y, { align: 'center' });
+    y += 8;
+    hline(y, [139, 26, 26]);
+    y += 8;
+
+    // ── customer box ─────────────────────────────
+    doc.setFillColor(248, 244, 238);
+    doc.roundedRect(margin, y, contentW, 38, 3, 3, 'F');
+    doc.setDrawColor(201, 152, 58);
+    doc.setLineWidth(0.5);
+    doc.roundedRect(margin, y, contentW, 38, 3, 3, 'S');
+
+    setFont(8, 'bold');
+    doc.setTextColor(139, 26, 26);
+    doc.text('CUSTOMER DETAILS', margin + 4, y + 7);
+
+    setFont(10);
+    doc.setTextColor(30, 30, 30);
+    const c = orderData.customer;
+    doc.text(`Name:   ${c.name}`,       margin + 4,             y + 16);
+    doc.text(`Phone:  ${c.phone}`,      margin + 4,             y + 24);
+    doc.text(`City:   ${c.city}`,       margin + 4,             y + 32);
+    doc.text(`Type:   ${c.orderType}`,  margin + contentW / 2,  y + 16);
+    y += 44;
+
+    // ── table header ─────────────────────────────
+    doc.setFillColor(139, 26, 26);
+    doc.rect(margin, y, contentW, 9, 'F');
+    setFont(8, 'bold');
+    doc.setTextColor(201, 152, 58);
+    const col = {
+      name:  margin + 3,
+      qty:   margin + contentW * 0.58,
+      unit:  margin + contentW * 0.68,
+      price: margin + contentW * 0.79,
+      total: pageW - margin - 2,
+    };
+    doc.text('ITEM',  col.name,  y + 6);
+    doc.text('QTY',   col.qty,   y + 6);
+    doc.text('UNIT',  col.unit,  y + 6);
+    doc.text('PRICE', col.price, y + 6);
+    doc.text('TOTAL', col.total, y + 6, { align: 'right' });
+    y += 11;
+
+    // ── item rows ─────────────────────────────────
+    let grandTotal = 0;
+    orderData.items.forEach((item, idx) => {
+      grandTotal += item.lineTotal;
+      if (idx % 2 === 1) {
+        doc.setFillColor(245, 240, 232);
+        doc.rect(margin, y - 3, contentW, 9, 'F');
+      }
+      setFont(9);
+      doc.setTextColor(30, 30, 30);
+      const nameStr = item.name.length > 24 ? item.name.substring(0, 24) + '…' : item.name;
+      doc.text(nameStr,             col.name,  y + 3);
+      doc.text(String(item.quantity), col.qty, y + 3);
+      doc.text(item.unit,           col.unit,  y + 3);
+      doc.text(`${item.price}`,     col.price, y + 3);
+      doc.text(`${item.lineTotal}`, col.total, y + 3, { align: 'right' });
+      y += 9;
+    });
+
+    hline(y, [139, 26, 26]);
+    y += 7;
+
+    // ── total ─────────────────────────────────────
+    setFont(13, 'bold');
+    doc.setTextColor(139, 26, 26);
+    doc.text('ESTIMATED TOTAL:', margin + 3, y);
+    doc.setTextColor(30, 30, 30);
+    doc.text(`ILS ${grandTotal}`, pageW - margin, y, { align: 'right' });
+    y += 6;
+    setFont(8);
+    doc.setTextColor(140, 130, 120);
+    doc.text('* Final price determined after actual weighing', margin + 3, y);
+    y += 10;
+
+    // ── notes ─────────────────────────────────────
+    if (c.notes) {
+      hline(y, [200, 190, 170]);
+      y += 7;
+      setFont(8, 'bold');
+      doc.setTextColor(139, 26, 26);
+      doc.text('NOTES:', margin + 3, y);
+      y += 6;
+      setFont(9);
+      doc.setTextColor(60, 60, 60);
+      const noteLines = doc.splitTextToSize(c.notes, contentW - 6);
+      doc.text(noteLines, margin + 3, y);
+    }
+
+    // ── footer ────────────────────────────────────
+    doc.setFillColor(139, 26, 26);
+    doc.rect(0, 285, pageW, 12, 'F');
+    setFont(8);
+    doc.setTextColor(200, 191, 176);
+    doc.text('Thank you for your order!  |  Eitan Meat Delicacies, Eilat', pageW / 2, 292, { align: 'center' });
+
+    // ── download ──────────────────────────────────
+    const d = now;
+    const stamp = `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+    const fileName = `order_${c.name.replace(/\s+/g, '_')}_${stamp}.pdf`;
+    doc.save(fileName);
+  }
+
+  // ─── Main: PDF + Drive (combined) ──────────────
+  async function generateOrderPDF() {
     const name  = document.getElementById('f-name').value.trim();
     const phone = document.getElementById('f-phone').value.trim();
     const city  = document.getElementById('f-city').value.trim();
@@ -1344,70 +1538,37 @@
       return;
     }
 
-    saveDetails();
-
     const ids = Object.keys(cart).filter(id => cart[id] > 0);
-
     if (!ids.length) {
       showToast('הסל ריק 🛒');
       return;
     }
 
-    const items = ids.map(id => {
-      const p = PRODUCTS.find(x => x.id === id);
+    saveDetails();
 
-      return {
-        id: p.id,
-        name: p.name,
-        quantity: cart[id],
-        unit: p.unit,
-        price: p.price,
-        lineTotal: p.price * cart[id]
-      };
-    });
-
-    const total = items.reduce((sum, item) => sum + item.lineTotal, 0);
-    const typeLabel = orderType === 'pickup' ? 'איסוף עצמי' : 'משלוח';
-
-    const orderData = {
-      customer: {
-        name: name,
-        phone: phone,
-        city: city,
-        orderType: typeLabel,
-        notes: notes
-      },
-      items: items,
-      total: total,
-      source: "אתר הזמנות איתן מעדני בשר",
-      createdAt: new Date().toISOString()
-    };
-
-    const btn = document.querySelector('.whatsapp-btn');
-    const oldText = btn.innerHTML;
-
-    btn.innerHTML = '<span class="wa-icon">⏳</span> שולח הזמנה...';
-    btn.disabled = true;
+    const btn     = document.querySelector('.whatsapp-btn');
+    const oldHTML = btn.innerHTML;
+    btn.innerHTML = '<span class="wa-icon">⏳</span> שולח ומוריד...';
+    btn.disabled  = true;
 
     try {
-      await fetch(GOOGLE_SCRIPT_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: {
-          "Content-Type": "text/plain;charset=utf-8"
-        },
-        body: JSON.stringify(orderData)
-      });
+      const orderData = buildOrderData(name, phone, city, notes);
+
+      // Run both in parallel — PDF download is instant, Drive is background
+      await Promise.all([
+        Promise.resolve(downloadPDF(orderData)),
+        sendToDrive(orderData)
+      ]);
 
       closeCheckout();
       showSuccess();
 
     } catch (err) {
       console.error(err);
-      showToast('שגיאה בשליחת ההזמנה. נסה שוב ⚠️');
+      showToast('שגיאה ביצירת ה-PDF ⚠️');
     } finally {
-      btn.innerHTML = oldText;
-      btn.disabled = false;
+      btn.innerHTML = oldHTML;
+      btn.disabled  = false;
     }
   }
 
