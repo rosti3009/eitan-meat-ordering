@@ -1023,10 +1023,101 @@
 
 <!-- APP LOGIC -->
 <script>
+  // ─── Business config + products from Google Sheets ───
+  const BUSINESS_CONFIG = {
+    name: "איתן מעדני בשר",
+    nameEn: "Eitan Meat Delicacies",
+    phone: "972501234567",
+    location: "אילת",
+    orderCutoffDay: 2,
+    orderCutoffHour: 12,
+    deliveryDay: "חמישי",
+    deliveryNote: "משלוחים כל יום חמישי לאזור הערבה ואילת",
+  };
+
+  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw6J3nM5zox75ZZ8T-86_tLF3WFf0bZ6lWQaucdtn1b4h0VKvCSCHve0yg5ikN4hci0IA/exec";
+
+  let PRODUCTS = [];
+  let CATEGORIES = [];
+
   // ─── State ─────────────────────────────────────
   const cart = {}; // { productId: quantity }
-  let currentCat = CATEGORIES[0].id;
+  let currentCat = null;
   let orderType = 'pickup';
+
+  async function loadProducts() {
+    const grid = document.getElementById('products-grid');
+    const label = document.getElementById('cat-label');
+
+    try {
+      label.textContent = 'טוען מוצרים...';
+      grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--white-dim)">טוען מחירון מהמערכת...</div>`;
+
+      const res = await fetch(GOOGLE_SCRIPT_URL, { method: 'GET' });
+      const json = await res.json();
+
+      if (!json.success || !Array.isArray(json.products)) {
+        throw new Error(json.error || 'תשובה לא תקינה מהשרת');
+      }
+
+      PRODUCTS = json.products
+        .filter(p => p && p.id && p.name)
+        .map(p => ({
+          id: String(p.id),
+          category: String(p.category || 'כללי'),
+          name: String(p.name || ''),
+          description: String(p.description || ''),
+          price: Number(p.price) || 0,
+          unit: String(p.unit || ''),
+          image: p.image ? String(p.image) : getImageByCategory(String(p.category || '')),
+          vip: String(p.vip || '').toUpperCase() === 'TRUE' || p.vip === true,
+          badge: p.badge ? String(p.badge) : null
+        }));
+
+      buildCategories();
+      renderCats();
+      renderProducts();
+      updateCartUI();
+
+    } catch (err) {
+      console.error('שגיאה בטעינת מוצרים:', err);
+      label.textContent = 'שגיאה בטעינת מוצרים';
+      grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--white-dim)">לא ניתן לטעון מוצרים מהשיטס. בדוק שהפריסה פעילה ושהקישור תקין.</div>`;
+      showToast('שגיאה בחיבור לשיטס ⚠️');
+    }
+  }
+
+  function buildCategories() {
+    const unique = [...new Set(PRODUCTS.map(p => p.category).filter(Boolean))];
+
+    CATEGORIES = unique.map(cat => ({
+      id: cat,
+      label: `${getCategoryIcon(cat)} ${cat}`,
+      icon: getCategoryIcon(cat)
+    }));
+
+    currentCat = CATEGORIES.length ? CATEGORIES[0].id : null;
+  }
+
+  function getCategoryIcon(cat) {
+    if (cat.includes('בשר') || cat.includes('בקר')) return '🥩';
+    if (cat.includes('עוף') || cat.includes('עופות')) return '🍗';
+    if (cat.includes('טחונים') || cat.includes('נקניקים') || cat.includes('קבב')) return '🔥';
+    if (cat.includes('דגים')) return '🐟';
+    if (cat.includes('כבש') || cat.includes('טלה')) return '🍖';
+    if (cat.includes('מבצע')) return '⚡';
+    return '📦';
+  }
+
+  function getImageByCategory(cat) {
+    if (cat.includes('עוף') || cat.includes('עופות')) {
+      return "https://images.unsplash.com/photo-1604503468506-a8da13d82791?w=600&q=80";
+    }
+    if (cat.includes('דגים')) {
+      return "https://images.unsplash.com/photo-1574781330855-d0db3b4dc3a8?w=600&q=80";
+    }
+    return "https://images.unsplash.com/photo-1588347818036-539ce8dc2b93?w=600&q=80";
+  }
 
   // ─── Order Status ───────────────────────────────
   function checkOrderStatus() {
@@ -1053,6 +1144,10 @@
   // ─── Render categories ─────────────────────────
   function renderCats() {
     const wrap = document.getElementById('cats-scroll');
+    if (!CATEGORIES.length) {
+      wrap.innerHTML = '';
+      return;
+    }
     wrap.innerHTML = CATEGORIES.map(c => `
       <button
         class="cat-btn ${c.id === currentCat ? 'active' : ''}"
@@ -1074,11 +1169,11 @@
     const grid  = document.getElementById('products-grid');
     const label = document.getElementById('cat-label');
     const cat   = CATEGORIES.find(c => c.id === currentCat);
-    const prods = PRODUCTS.filter(p => p.category === currentCat);
+    const prods = currentCat ? PRODUCTS.filter(p => p.category === currentCat) : [];
 
     label.textContent = cat ? cat.label : '';
 
-    if (!prods.length) {
+    if (!currentCat || !prods.length) {
       grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--white-dim)">אין מוצרים בקטגוריה זו</div>`;
       return;
     }
@@ -1330,8 +1425,6 @@
     } catch(e) {}
   }
 
-  // ─── Google Apps Script URL ────────────────────
-  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw6J3nM5zox75ZZ8T-86_tLF3WFf0bZ6lWQaucdtn1b4h0VKvCSCHve0yg5ikN4hci0IA/exec";
   // ─── Build order data object ───────────────────
   function buildOrderData(name, phone, city, notes) {
     const ids = Object.keys(cart).filter(id => cart[id] > 0);
@@ -1596,8 +1689,7 @@
 
   // ─── INIT ──────────────────────────────────────
   checkOrderStatus();
-  renderCats();
-  renderProducts();
+  loadProducts();
 </script>
 
 </body>
