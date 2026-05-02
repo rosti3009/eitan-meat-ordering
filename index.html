@@ -1188,7 +1188,7 @@
               src="${p.image}"
               alt="${p.name}"
               loading="lazy"
-              onerror="this.src='https://images.unsplash.com/photo-1529694157872-4e0c0f3b238b?w=400&q=60'"
+              referrerpolicy="no-referrer"
             />
             ${p.badge ? `<div class="card-badge ${p.badge.includes('💎') || p.badge.includes('שבת') ? 'gold' : ''}">${p.badge}</div>` : ''}
             ${p.vip ? `<div class="card-vip">VIP</div>` : ''}
@@ -1318,8 +1318,7 @@
 
       return `
         <div class="cart-item">
-          <img class="ci-img" src="${p.image}" alt="${p.name}" loading="lazy"
-            onerror="this.src='https://images.unsplash.com/photo-1529694157872-4e0c0f3b238b?w=100&q=60'" />
+          <img class="ci-img" src="${p.image}" alt="${p.name}" loading="lazy" referrerpolicy="no-referrer" />
           <div class="ci-info">
             <div class="ci-name">${p.name}</div>
             <div class="ci-price">₪${p.price} / ${p.unit}</div>
