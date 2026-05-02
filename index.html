@@ -1550,9 +1550,11 @@
     try {
       const orderData = buildOrderData(name, phone, city, notes);
 
-      // Open print window (PDF) + send to Drive
-      downloadPDF(orderData);
+      // קודם שולח ל-Apps Script / Drive
       await sendToDrive(orderData);
+
+      // רק אחרי השליחה פותח PDF מקומי להדפסה
+      downloadPDF(orderData);
 
       closeCheckout();
       showSuccess();
