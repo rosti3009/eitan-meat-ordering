@@ -846,6 +846,191 @@
       opacity: 0.4;
     }
 
+
+
+    /* ═══════════════════════════════════════════
+       ACCESSIBILITY WIDGET
+    ═══════════════════════════════════════════ */
+    #accessibility-toggle {
+      position: fixed;
+      left: 14px;
+      bottom: 90px;
+      z-index: 9999;
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: var(--gold);
+      color: var(--black);
+      font-size: 22px;
+      font-weight: 900;
+      box-shadow: var(--shadow-gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #accessibility-panel {
+      position: fixed;
+      left: 14px;
+      bottom: 145px;
+      z-index: 10000;
+      width: min(280px, calc(100vw - 28px));
+      background: var(--black-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px;
+      box-shadow: var(--shadow-card);
+      display: none;
+    }
+
+    #accessibility-panel.open { display: block; }
+
+    .accessibility-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--gold);
+      margin-bottom: 10px;
+    }
+
+    .accessibility-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .accessibility-btn {
+      background: var(--black-3);
+      color: var(--white);
+      border: 1px solid var(--border-dim);
+      border-radius: var(--radius-sm);
+      padding: 10px 8px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .accessibility-btn:focus,
+    #accessibility-toggle:focus,
+    button:focus,
+    input:focus,
+    textarea:focus {
+      outline: 3px solid var(--gold-light);
+      outline-offset: 2px;
+    }
+
+    body.a11y-large { font-size: 18px; }
+    body.a11y-larger { font-size: 20px; }
+    body.a11y-readable { font-family: Arial, sans-serif; }
+    body.a11y-links a,
+    body.a11y-links button { text-decoration: underline; }
+
+    body.a11y-contrast {
+      --black: #000;
+      --black-2: #000;
+      --black-3: #111;
+      --black-4: #111;
+      --black-5: #222;
+      --white: #fff;
+      --white-dim: #fff;
+      --gold: #ffd400;
+      --gold-light: #ffe45c;
+      --red: #b00000;
+      --red-light: #d00000;
+      --border-dim: rgba(255,255,255,0.35);
+      --border: rgba(255,212,0,0.65);
+    }
+
+    body.a11y-contrast .card-desc,
+    body.a11y-contrast .closed-sub,
+    body.a11y-contrast .cart-price-note,
+    body.a11y-contrast .field-label,
+    body.a11y-contrast .card-unit {
+      color: #fff;
+    }
+
+
+    /* ═══════════════════════════════════════════
+       LEGAL FOOTER + MODALS
+    ═══════════════════════════════════════════ */
+    #legal-footer {
+      padding: 18px 14px 150px;
+      text-align: center;
+      color: var(--white-dim);
+      font-size: 12px;
+      border-top: 1px solid var(--border-dim);
+    }
+
+    .legal-link-btn {
+      background: transparent;
+      color: var(--gold-light);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 6px 8px;
+      text-decoration: underline;
+    }
+
+    .legal-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.82);
+      z-index: 800;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 12px;
+    }
+
+    .legal-modal-overlay.open {
+      display: flex;
+    }
+
+    .legal-modal {
+      width: min(520px, 100%);
+      max-height: 86dvh;
+      overflow-y: auto;
+      background: var(--black-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-card);
+      padding: 18px;
+      color: var(--white);
+    }
+
+    .legal-modal h2 {
+      font-family: var(--font-display);
+      font-size: 22px;
+      color: var(--gold-light);
+      margin-bottom: 12px;
+    }
+
+    .legal-modal h3 {
+      font-size: 15px;
+      color: var(--gold);
+      margin: 16px 0 6px;
+    }
+
+    .legal-modal p,
+    .legal-modal li {
+      font-size: 13px;
+      color: var(--white-dim);
+      line-height: 1.65;
+      margin-bottom: 8px;
+    }
+
+    .legal-modal ul {
+      padding-right: 18px;
+      margin-bottom: 8px;
+    }
+
+    .legal-modal-close {
+      width: 100%;
+      margin-top: 14px;
+      background: var(--red);
+      color: var(--white);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      font-weight: 800;
+    }
+
     /* ═══════════════════════════════════════════
        RESPONSIVE TWEAKS
     ═══════════════════════════════════════════ */
@@ -1019,6 +1204,44 @@
 <!-- TOAST -->
 <div id="toast"></div>
 
+
+
+<!-- ACCESSIBILITY -->
+<button id="accessibility-toggle" type="button" onclick="toggleAccessibilityPanel()" aria-label="פתיחת תפריט נגישות">
+  ♿
+</button>
+
+<div id="accessibility-panel" role="dialog" aria-label="תפריט נגישות">
+  <div class="accessibility-title">אפשרויות נגישות</div>
+  <div class="accessibility-grid">
+    <button class="accessibility-btn" type="button" onclick="setTextSize('large')">הגדלת טקסט</button>
+    <button class="accessibility-btn" type="button" onclick="setTextSize('larger')">טקסט גדול מאוד</button>
+    <button class="accessibility-btn" type="button" onclick="toggleA11yClass('a11y-contrast')">ניגודיות גבוהה</button>
+    <button class="accessibility-btn" type="button" onclick="toggleA11yClass('a11y-readable')">פונט קריא</button>
+    <button class="accessibility-btn" type="button" onclick="toggleA11yClass('a11y-links')">הדגשת כפתורים</button>
+    <button class="accessibility-btn" type="button" onclick="resetAccessibility()">איפוס</button>
+  </div>
+</div>
+
+<!-- LEGAL FOOTER -->
+<footer id="legal-footer">
+  <div>© איתן מעדני בשר · אתר הזמנות</div>
+  <div>
+    <button class="legal-link-btn" type="button" onclick="openLegalModal('accessibility')">הצהרת נגישות</button>
+    <button class="legal-link-btn" type="button" onclick="openLegalModal('privacy')">מדיניות פרטיות</button>
+    <button class="legal-link-btn" type="button" onclick="openLegalModal('terms')">תנאי שימוש והזמנה</button>
+  </div>
+</footer>
+
+<!-- LEGAL MODALS -->
+<div id="legal-modal-overlay" class="legal-modal-overlay" onclick="closeLegalModal(event)">
+  <div class="legal-modal" role="dialog" aria-modal="true" aria-labelledby="legal-modal-title" onclick="event.stopPropagation()">
+    <div id="legal-modal-content"></div>
+    <button class="legal-modal-close" type="button" onclick="closeLegalModal()">סגור</button>
+  </div>
+</div>
+
+
 <!-- DATA -->
 
 <!-- APP LOGIC -->
@@ -1035,7 +1258,7 @@
     deliveryNote: "משלוחים כל יום חמישי לאזור הערבה ואילת",
   };
 
-  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw6J3nM5zox75ZZ8T-86_tLF3WFf0bZ6lWQaucdtn1b4h0VKvCSCHve0yg5ikN4hci0IA/exec";
+  const API_BASE = "https://eitan-meat-ordering.onrender.com";
 
   let PRODUCTS = [];
   let CATEGORIES = [];
@@ -1053,7 +1276,7 @@
       label.textContent = 'טוען מוצרים...';
       grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--white-dim)">טוען מחירון מהמערכת...</div>`;
 
-      const res = await fetch(GOOGLE_SCRIPT_URL, { method: 'GET' });
+      const res = await fetch(`${API_BASE}/products`, { method: 'GET' });
       const json = await res.json();
 
       if (!json.success || !Array.isArray(json.products)) {
@@ -1188,7 +1411,7 @@
               src="${p.image}"
               alt="${p.name}"
               loading="lazy"
-              onerror="this.src='https://images.unsplash.com/photo-1529694157872-4e0c0f3b238b?w=400&q=60'"
+              referrerpolicy="no-referrer"
             />
             ${p.badge ? `<div class="card-badge ${p.badge.includes('💎') || p.badge.includes('שבת') ? 'gold' : ''}">${p.badge}</div>` : ''}
             ${p.vip ? `<div class="card-vip">VIP</div>` : ''}
@@ -1318,8 +1541,7 @@
 
       return `
         <div class="cart-item">
-          <img class="ci-img" src="${p.image}" alt="${p.name}" loading="lazy"
-            onerror="this.src='https://images.unsplash.com/photo-1529694157872-4e0c0f3b238b?w=100&q=60'" />
+          <img class="ci-img" src="${p.image}" alt="${p.name}" loading="lazy" referrerpolicy="no-referrer" />
           <div class="ci-info">
             <div class="ci-name">${p.name}</div>
             <div class="ci-price">₪${p.price} / ${p.unit}</div>
@@ -1454,22 +1676,25 @@
   // ─── Send to Google Drive (Apps Script) ────────
   async function sendToDrive(orderData) {
     try {
-      console.log("שולח ל-Apps Script:", orderData);
+      console.log("שולח לשרת Render:", orderData);
 
-      await fetch(GOOGLE_SCRIPT_URL, {
+      const response = await fetch(`${API_BASE}/order`, {
         method: 'POST',
-        mode: 'no-cors',
         headers: {
-          'Content-Type': 'text/plain;charset=utf-8'
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify(orderData)
       });
 
-      console.log("הבקשה נשלחה ל-Apps Script");
+      if (!response.ok) {
+        throw new Error('Server returned ' + response.status);
+      }
+
+      console.log("הבקשה נשלחה לשרת Render");
       return true;
 
     } catch (err) {
-      console.error('שגיאה בשליחה ל-Drive:', err);
+      console.error('שגיאה בשליחה לשרת:', err);
       return false;
     }
   }
@@ -1685,6 +1910,122 @@
 
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+  }
+
+
+
+
+  // ─── Accessibility ─────────────────────────────
+  function toggleAccessibilityPanel() {
+    const panel = document.getElementById('accessibility-panel');
+    if (panel) panel.classList.toggle('open');
+  }
+
+  function persistA11ySettings() {
+    const classes = ['a11y-large', 'a11y-larger', 'a11y-contrast', 'a11y-readable', 'a11y-links']
+      .filter(cls => document.body.classList.contains(cls));
+
+    try {
+      localStorage.setItem('eitan_a11y_classes', JSON.stringify(classes));
+    } catch (e) {}
+  }
+
+  function loadA11ySettings() {
+    try {
+      const classes = JSON.parse(localStorage.getItem('eitan_a11y_classes') || '[]');
+      classes.forEach(cls => document.body.classList.add(cls));
+    } catch (e) {}
+  }
+
+  function setTextSize(size) {
+    document.body.classList.remove('a11y-large', 'a11y-larger');
+
+    if (size === 'large') document.body.classList.add('a11y-large');
+    if (size === 'larger') document.body.classList.add('a11y-larger');
+
+    persistA11ySettings();
+  }
+
+  function toggleA11yClass(cls) {
+    document.body.classList.toggle(cls);
+    persistA11ySettings();
+  }
+
+  function resetAccessibility() {
+    document.body.classList.remove('a11y-large', 'a11y-larger', 'a11y-contrast', 'a11y-readable', 'a11y-links');
+    try {
+      localStorage.removeItem('eitan_a11y_classes');
+    } catch (e) {}
+  }
+
+  // ─── Legal modals ──────────────────────────────
+  const LEGAL_CONTENT = {
+    accessibility: `
+      <h2 id="legal-modal-title">הצהרת נגישות</h2>
+      <p>איתן מעדני בשר פועל להנגשת אתר ההזמנות לציבור הרחב, לרבות אנשים עם מוגבלות, ככל הניתן במסגרת אתר סטטי ומערכת הזמנות מקוונת.</p>
+      <h3>אפשרויות נגישות באתר</h3>
+      <ul>
+        <li>כפתור נגישות קבוע באתר.</li>
+        <li>אפשרות להגדלת טקסט.</li>
+        <li>אפשרות לניגודיות גבוהה.</li>
+        <li>אפשרות לפונט קריא והדגשת כפתורים.</li>
+        <li>תמיכה בניווט בסיסי באמצעות מקלדת.</li>
+      </ul>
+      <h3>רכז / איש קשר לנגישות</h3>
+      <p>לפניות בנושא נגישות, קושי בשימוש באתר או בקשה להתאמה חלופית, ניתן לפנות אלינו בטלפון העסק או דרך אמצעי הקשר הרשמיים של איתן מעדני בשר.</p>
+      <h3>הבהרה</h3>
+      <p>אנו ממשיכים לשפר את הנגישות באתר. אם נתקלת בבעיה, נשמח לקבל פירוט כדי לתקן במהירות האפשרית.</p>
+      <p>עדכון אחרון: 03/05/2026</p>
+    `,
+    privacy: `
+      <h2 id="legal-modal-title">מדיניות פרטיות</h2>
+      <p>בעת ביצוע הזמנה באתר אנו אוספים מידע שנמסר על ידי המשתמש, כגון שם, טלפון, עיר/אזור, סוג הזמנה, הערות להזמנה, פרטי המוצרים והאם ניתנה הסכמה לקבלת דיוור שיווקי.</p>
+      <h3>מטרות השימוש במידע</h3>
+      <ul>
+        <li>קליטת הזמנה וטיפול בה.</li>
+        <li>יצירת קשר לאישור מלאי, שקילה, מחיר סופי ותשלום.</li>
+        <li>הפקת מסמך הזמנה פנימי.</li>
+        <li>שליחת עדכונים שיווקיים רק למי שאישר זאת במפורש.</li>
+      </ul>
+      <h3>שמירת מידע</h3>
+      <p>המידע עשוי להישמר במערכות Google Sheets / Google Drive ובשרת תיווך טכני לצורך תפעול ההזמנות. אין למסור באתר מידע רפואי, סיסמאות, פרטי אשראי או מידע רגיש שאינו דרוש להזמנה.</p>
+      <h3>מסירת מידע לצדדים שלישיים</h3>
+      <p>המידע לא יימכר לצדדים שלישיים. ייתכן שימוש בספקים טכנולוגיים הנדרשים להפעלת האתר וההזמנות, כגון GitHub Pages, Render, Google Sheets ו-Google Drive.</p>
+      <h3>זכויות המשתמש</h3>
+      <p>ניתן לפנות אלינו לבקשת עיון, תיקון או הסרת מידע, בכפוף לדין ולצרכים חשבונאיים/תפעוליים.</p>
+      <p>עדכון אחרון: 03/05/2026</p>
+    `,
+    terms: `
+      <h2 id="legal-modal-title">תנאי שימוש והזמנה</h2>
+      <h3>כללי</h3>
+      <p>האתר מיועד לביצוע הזמנות מוצרים מאיתן מעדני בשר. שליחת הזמנה באתר אינה מהווה אישור סופי של מלאי או מחיר סופי.</p>
+      <h3>מחירים ומשקלים</h3>
+      <p>המחירים באתר מוצגים לפי ק״ג או לפי יחידה, בהתאם למוצר. במוצרים לפי משקל, המחיר הסופי נקבע רק לאחר שקילה בפועל.</p>
+      <h3>זמינות מלאי</h3>
+      <p>כל הזמנה כפופה לזמינות המוצרים בפועל. במקרה של חוסר מלאי, ניצור קשר לעדכון או החלפה.</p>
+      <h3>תשלום</h3>
+      <p>התשלום מתבצע לאחר אישור ההזמנה, שקילה בפועל ואישור סופי מול הלקוח.</p>
+      <h3>חוק הספאם ודיוור שיווקי</h3>
+      <p>סימון אישור לקבלת הודעות ועדכונים שיווקיים הוא רשות בלבד ואינו תנאי לביצוע הזמנה. מי שסימן הסכמה עשוי לקבל הודעות על מבצעים, הטבות ועדכונים באמצעי הקשר שמסר. ניתן לבקש הסרה מרשימת הדיוור בכל עת.</p>
+      <h3>אחריות שימוש</h3>
+      <p>המשתמש אחראי למסירת פרטים נכונים ומלאים. אין לעשות שימוש לרעה באתר או לשלוח הזמנות כוזבות.</p>
+      <p>עדכון אחרון: 03/05/2026</p>
+    `
+  };
+
+  function openLegalModal(type) {
+    const overlay = document.getElementById('legal-modal-overlay');
+    const content = document.getElementById('legal-modal-content');
+    content.innerHTML = LEGAL_CONTENT[type] || '';
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLegalModal(event) {
+    if (event && event.target && event.target.id !== 'legal-modal-overlay') return;
+    const overlay = document.getElementById('legal-modal-overlay');
+    overlay.classList.remove('open');
+    document.body.style.overflow = '';
   }
 
   // ─── INIT ──────────────────────────────────────
