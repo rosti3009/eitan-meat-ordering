@@ -421,29 +421,6 @@
       text-align: center;
       color: var(--white);
     }
-    .qty-input {
-      width: 58px;
-      height: 30px;
-      background: var(--black-5);
-      color: var(--white);
-      border: 1px solid var(--border-dim);
-      border-radius: var(--radius-sm);
-      font-size: 14px;
-      font-weight: 700;
-      text-align: center;
-      direction: ltr;
-      -moz-appearance: textfield;
-    }
-    .qty-input::-webkit-outer-spin-button,
-    .qty-input::-webkit-inner-spin-button {
-      -webkit-appearance: none;
-      margin: 0;
-    }
-    .qty-unit-label {
-      font-size: 11px;
-      color: var(--white-dim);
-      white-space: nowrap;
-    }
     .add-btn {
       flex: 1;
       background: var(--red);
@@ -869,6 +846,157 @@
       opacity: 0.4;
     }
 
+
+    /* ═══════════════════════════════════════════
+       ACCESSIBILITY WIDGET
+    ═══════════════════════════════════════════ */
+    #accessibility-toggle {
+      position: fixed;
+      left: 14px;
+      bottom: 155px;
+      z-index: 650;
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: var(--gold);
+      color: var(--black);
+      font-size: 22px;
+      font-weight: 900;
+      box-shadow: var(--shadow-gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #accessibility-panel {
+      position: fixed;
+      left: 14px;
+      bottom: 208px;
+      z-index: 651;
+      width: min(280px, calc(100vw - 28px));
+      background: var(--black-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px;
+      box-shadow: var(--shadow-card);
+      display: none;
+    }
+
+    #accessibility-panel.open {
+      display: block;
+    }
+
+    .accessibility-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--gold);
+      margin-bottom: 10px;
+    }
+
+    .accessibility-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .accessibility-btn {
+      background: var(--black-3);
+      color: var(--white);
+      border: 1px solid var(--border-dim);
+      border-radius: var(--radius-sm);
+      padding: 10px 8px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .accessibility-btn:focus,
+    #accessibility-toggle:focus,
+    button:focus,
+    input:focus,
+    textarea:focus {
+      outline: 3px solid var(--gold-light);
+      outline-offset: 2px;
+    }
+
+    body.a11y-large {
+      font-size: 18px;
+    }
+
+    body.a11y-larger {
+      font-size: 20px;
+    }
+
+    body.a11y-readable {
+      font-family: Arial, sans-serif;
+    }
+
+    body.a11y-links a,
+    body.a11y-links button {
+      text-decoration: underline;
+    }
+
+    body.a11y-contrast {
+      --black: #000;
+      --black-2: #000;
+      --black-3: #111;
+      --black-4: #111;
+      --black-5: #222;
+      --white: #fff;
+      --white-dim: #fff;
+      --gold: #ffd400;
+      --gold-light: #ffe45c;
+      --red: #b00000;
+      --red-light: #d00000;
+      --border-dim: rgba(255,255,255,0.35);
+      --border: rgba(255,212,0,0.65);
+    }
+
+    body.a11y-contrast .card-desc,
+    body.a11y-contrast .closed-sub,
+    body.a11y-contrast .cart-price-note,
+    body.a11y-contrast .field-label,
+    body.a11y-contrast .card-unit {
+      color: #fff;
+    }
+
+    /* ═══════════════════════════════════════════
+       LEGAL / MARKETING CONSENT BOX
+    ═══════════════════════════════════════════ */
+    .legal-box {
+      background: var(--black-3);
+      border: 1px solid var(--border-dim);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      margin-top: 16px;
+      font-size: 12px;
+      color: var(--white-dim);
+      line-height: 1.6;
+    }
+
+    .legal-check-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin-top: 10px;
+      color: var(--white);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .legal-check-row input {
+      width: 18px;
+      height: 18px;
+      margin-top: 2px;
+      flex-shrink: 0;
+      accent-color: var(--gold);
+    }
+
+    .legal-small {
+      margin-top: 8px;
+      font-size: 11px;
+      color: var(--white-dim);
+    }
+
     /* ═══════════════════════════════════════════
        RESPONSIVE TWEAKS
     ═══════════════════════════════════════════ */
@@ -1011,6 +1139,25 @@
       ></textarea>
     </div>
 
+
+    <div class="legal-box">
+      <div>
+        שליחת ההזמנה מיועדת לטיפול בהזמנה, יצירת קשר, אישור מלאי, שקילה ותשלום בפועל.
+      </div>
+
+      <label class="legal-check-row" for="f-marketing-consent">
+        <input id="f-marketing-consent" type="checkbox" />
+        <span>
+          אני מאשר/ת קבלת הודעות ועדכונים שיווקיים, מבצעים והטבות מאיתן מעדני בשר באמצעי קשר שמסרתי.
+        </span>
+      </label>
+
+      <div class="legal-small">
+        האישור לדיוור שיווקי אינו חובה לצורך ביצוע הזמנה. ניתן לבקש הסרה מרשימת הדיוור בכל עת.
+      </div>
+    </div>
+
+
     <div class="gold-divider"></div>
 
     <div style="font-size:12px;color:var(--white-dim);text-align:center;line-height:1.6;padding-bottom:10px">
@@ -1041,6 +1188,24 @@
 
 <!-- TOAST -->
 <div id="toast"></div>
+
+
+<!-- ACCESSIBILITY -->
+<button id="accessibility-toggle" type="button" onclick="toggleAccessibilityPanel()" aria-label="פתיחת תפריט נגישות">
+  ♿
+</button>
+
+<div id="accessibility-panel" role="dialog" aria-label="תפריט נגישות">
+  <div class="accessibility-title">אפשרויות נגישות</div>
+  <div class="accessibility-grid">
+    <button class="accessibility-btn" type="button" onclick="setTextSize('large')">הגדלת טקסט</button>
+    <button class="accessibility-btn" type="button" onclick="setTextSize('larger')">טקסט גדול מאוד</button>
+    <button class="accessibility-btn" type="button" onclick="toggleA11yClass('a11y-contrast')">ניגודיות גבוהה</button>
+    <button class="accessibility-btn" type="button" onclick="toggleA11yClass('a11y-readable')">פונט קריא</button>
+    <button class="accessibility-btn" type="button" onclick="toggleA11yClass('a11y-links')">הדגשת כפתורים</button>
+    <button class="accessibility-btn" type="button" onclick="resetAccessibility()">איפוס</button>
+  </div>
+</div>
 
 <!-- DATA -->
 
@@ -1142,41 +1307,6 @@
     return "https://images.unsplash.com/photo-1588347818036-539ce8dc2b93?w=600&q=80";
   }
 
-  function isKgUnit(unit) {
-    const u = String(unit || '').replace('״', '"');
-    return u.includes('ק"ג') || u.includes('קג') || u.includes('kg') || u.includes('KG');
-  }
-
-  function getQtyStep(product) {
-    return isKgUnit(product?.unit) ? 0.1 : 1;
-  }
-
-  function getMinQty(product) {
-    return isKgUnit(product?.unit) ? 0.1 : 1;
-  }
-
-  function formatQty(qty) {
-    const n = Number(qty) || 0;
-    return Number.isInteger(n) ? String(n) : String(Number(n.toFixed(2)));
-  }
-
-  function normalizeQty(value, product) {
-    const min = getMinQty(product);
-    const step = getQtyStep(product);
-    let qty = Number(value);
-
-    if (!qty || qty < min) qty = min;
-    if (!isKgUnit(product?.unit)) qty = Math.round(qty);
-
-    qty = Math.round(qty / step) * step;
-    return Number(qty.toFixed(2));
-  }
-
-  function formatMoney(value) {
-    const n = Number(value) || 0;
-    return Number.isInteger(n) ? String(n) : n.toFixed(2);
-  }
-
   // ─── Order Status ───────────────────────────────
   function checkOrderStatus() {
     const now = new Date();
@@ -1246,7 +1376,7 @@
               src="${p.image}"
               alt="${p.name}"
               loading="lazy"
-              onerror="this.src='https://images.unsplash.com/photo-1529694157872-4e0c0f3b238b?w=400&q=60'"
+              referrerpolicy="no-referrer"
             />
             ${p.badge ? `<div class="card-badge ${p.badge.includes('💎') || p.badge.includes('שבת') ? 'gold' : ''}">${p.badge}</div>` : ''}
             ${p.vip ? `<div class="card-vip">VIP</div>` : ''}
@@ -1255,29 +1385,21 @@
             <div class="card-name">${p.name}</div>
             <div class="card-desc">${p.description}</div>
             <div class="card-price-row">
-              <span class="card-price">₪${formatMoney(p.price)}</span>
+              <span class="card-price">₪${p.price}</span>
               <span class="card-unit">/ ${p.unit}</span>
             </div>
           </div>
           <div class="card-controls">
-            <div class="qty-wrap" style="padding:0 6px; gap:6px;">
-              <input
-                class="qty-input"
-                id="qty-${p.id}"
-                type="number"
-                min="${getMinQty(p)}"
-                step="${getQtyStep(p)}"
-                value="${formatQty(qty || getMinQty(p))}"
-                inputmode="decimal"
-                aria-label="כמות להזמנה"
-              />
-              <span class="qty-unit-label">${p.unit}</span>
+            <div class="qty-wrap">
+              <button class="qty-btn" onclick="changeQty('${p.id}', -1)" aria-label="הפחת">−</button>
+              <span class="qty-val" id="qty-${p.id}">${qty || 1}</span>
+              <button class="qty-btn" onclick="changeQty('${p.id}', 1)" aria-label="הוסף">+</button>
             </div>
             <button
               class="add-btn ${qty > 0 ? 'added' : ''}"
               id="add-btn-${p.id}"
               onclick="addToCart('${p.id}')"
-            >${qty > 0 ? '✓ עדכן' : '+ הוסף'}</button>
+            >${qty > 0 ? '✓ בסל' : '+ הוסף'}</button>
           </div>
         </article>
       `;
@@ -1286,20 +1408,17 @@
 
   // ─── Qty selector on product card ──────────────
   function changeQty(id, delta) {
-    const prod = PRODUCTS.find(p => p.id === id);
-    if (!prod) return;
-
     const el = document.getElementById(`qty-${id}`);
     if (!el) return;
 
-    const current = el.value !== undefined ? Number(el.value) : Number(el.textContent);
-    const next = normalizeQty(current + delta * getQtyStep(prod), prod);
+    let v = parseInt(el.textContent) + delta;
+    if (v < 1) v = 1;
+    if (v > 20) v = 20;
 
-    if (el.value !== undefined) el.value = formatQty(next);
-    else el.textContent = formatQty(next);
+    el.textContent = v;
 
     if (cart[id]) {
-      cart[id] = next;
+      cart[id] = v;
       updateCartUI();
     }
   }
@@ -1310,15 +1429,7 @@
     if (!prod) return;
 
     const qtyEl = document.getElementById(`qty-${id}`);
-    const rawQty = qtyEl ? (qtyEl.value !== undefined ? qtyEl.value : qtyEl.textContent) : getMinQty(prod);
-    const qty = normalizeQty(rawQty, prod);
-
-    if (!qty || qty <= 0) {
-      showToast('נא להזין כמות תקינה ⚠️');
-      return;
-    }
-
-    if (qtyEl && qtyEl.value !== undefined) qtyEl.value = formatQty(qty);
+    const qty   = qtyEl ? parseInt(qtyEl.textContent) : 1;
 
     cart[id] = qty;
     updateCartUI();
@@ -1351,14 +1462,14 @@
       badge.textContent = count;
       badge.classList.remove('hidden');
       fab.classList.add('has-items');
-      label.textContent = `₪${formatMoney(total)}`;
+      label.textContent = `₪${total}`;
     } else {
       badge.classList.add('hidden');
       fab.classList.remove('has-items');
       label.textContent = 'סל';
     }
 
-    document.getElementById('cart-total-display').textContent = `₪${formatMoney(total)}`;
+    document.getElementById('cart-total-display').textContent = `₪${total}`;
   }
 
   // ─── Cart drawer ───────────────────────────────
@@ -1395,15 +1506,14 @@
 
       return `
         <div class="cart-item">
-          <img class="ci-img" src="${p.image}" alt="${p.name}" loading="lazy"
-            onerror="this.src='https://images.unsplash.com/photo-1529694157872-4e0c0f3b238b?w=100&q=60'" />
+          <img class="ci-img" src="${p.image}" alt="${p.name}" loading="lazy" referrerpolicy="no-referrer" />
           <div class="ci-info">
             <div class="ci-name">${p.name}</div>
-            <div class="ci-price">₪${formatMoney(p.price)} / ${p.unit}</div>
+            <div class="ci-price">₪${p.price} / ${p.unit}</div>
           </div>
           <div class="ci-qty-wrap">
             <button class="ci-qty-btn" onclick="updateCartQty('${id}', -1)">−</button>
-            <span class="ci-qty-val">${formatQty(cart[id])}</span>
+            <span class="ci-qty-val">${cart[id]}</span>
             <button class="ci-qty-btn" onclick="updateCartQty('${id}', 1)">+</button>
           </div>
         </div>
@@ -1412,13 +1522,9 @@
   }
 
   function updateCartQty(id, delta) {
-    const prod = PRODUCTS.find(p => p.id === id);
-    if (!prod) return;
+    cart[id] = (cart[id] || 0) + delta;
 
-    const step = getQtyStep(prod);
-    const next = normalizeQty((cart[id] || 0) + delta * step, prod);
-
-    if (next < getMinQty(prod)) {
+    if (cart[id] <= 0) {
       delete cart[id];
 
       const btn = document.getElementById(`add-btn-${id}`);
@@ -1426,13 +1532,10 @@
         btn.textContent = '+ הוסף';
         btn.classList.remove('added');
       }
-    } else {
-      cart[id] = next;
     }
 
     updateCartUI();
     renderCartItems();
-    renderProducts();
   }
 
   // ─── Checkout ──────────────────────────────────
@@ -1471,7 +1574,7 @@
       ${ids.map(id => {
         const p = PRODUCTS.find(x => x.id === id);
         if (!p) return '';
-        return `<div class="osb-row"><span class="osb-name">${p.name}</span><span class="osb-qty">×${cart[id]} — ₪${formatMoney(p.price * cart[id])}</span></div>`;
+        return `<div class="osb-row"><span class="osb-name">${p.name}</span><span class="osb-qty">×${cart[id]} — ₪${p.price * cart[id]}</span></div>`;
       }).join('')}
       <div class="osb-total-row">
         <span class="osb-total-label">סה״כ משוער</span>
@@ -1510,7 +1613,7 @@
   }
 
   // ─── Build order data object ───────────────────
-  function buildOrderData(name, phone, city, notes) {
+  function buildOrderData(name, phone, city, notes, marketingConsent = false) {
     const ids = Object.keys(cart).filter(id => cart[id] > 0);
     const items = ids.map(id => {
       const p = PRODUCTS.find(x => x.id === id);
@@ -1520,14 +1623,15 @@
         quantity:  cart[id],
         unit:      p.unit,
         price:     p.price,
-        lineTotal: Number((p.price * cart[id]).toFixed(2))
+        lineTotal: p.price * cart[id]
       };
     });
     const total = items.reduce((s, i) => s + i.lineTotal, 0);
     return {
       customer: { name, phone, city,
         orderType: orderType === 'pickup' ? 'איסוף עצמי' : 'משלוח',
-        notes
+        notes,
+        marketingConsent
       },
       items,
       total,
@@ -1567,10 +1671,10 @@
     const itemsRows = orderData.items.map((item, i) => `
       <tr style="background:${i % 2 === 0 ? '#ffffff' : '#faf7f3'}">
         <td>${item.name}</td>
-        <td style="text-align:center">${formatQty(item.quantity)}</td>
+        <td style="text-align:center">${item.quantity}</td>
         <td style="text-align:center">${item.unit}</td>
-        <td style="text-align:center">₪${formatMoney(item.price)}</td>
-        <td style="text-align:center;font-weight:700">₪${formatMoney(item.lineTotal)}</td>
+        <td style="text-align:center">₪${item.price}</td>
+        <td style="text-align:center;font-weight:700">₪${item.lineTotal}</td>
       </tr>`).join('');
 
     const notesHtml = c.notes
@@ -1672,7 +1776,7 @@
         ${itemsRows}
         <tr class="total-row">
           <td colspan="4">סה"כ משוער</td>
-          <td style="text-align:center">₪${formatMoney(orderData.total)}</td>
+          <td style="text-align:center">₪${orderData.total}</td>
         </tr>
       </tbody>
     </table>
@@ -1707,6 +1811,7 @@
     const phone = document.getElementById('f-phone').value.trim();
     const city  = document.getElementById('f-city').value.trim();
     const notes = document.getElementById('f-notes').value.trim();
+    const marketingConsent = document.getElementById('f-marketing-consent')?.checked || false;
 
     if (!name || !phone || !city) {
       showToast('נא למלא שם, טלפון ועיר ⚠️');
@@ -1724,7 +1829,7 @@
     btn.disabled  = true;
 
     try {
-      const orderData = buildOrderData(name, phone, city, notes);
+      const orderData = buildOrderData(name, phone, city, notes, marketingConsent);
 
       // קודם שולח ל-Apps Script / Drive
       await sendToDrive(orderData);
@@ -1771,7 +1876,57 @@
     toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
   }
 
+
+  // ─── Accessibility ─────────────────────────────
+  function toggleAccessibilityPanel() {
+    const panel = document.getElementById('accessibility-panel');
+    panel.classList.toggle('open');
+  }
+
+  function persistA11ySettings() {
+    const classes = ['a11y-large', 'a11y-larger', 'a11y-contrast', 'a11y-readable', 'a11y-links']
+      .filter(cls => document.body.classList.contains(cls));
+
+    try {
+      localStorage.setItem('eitan_a11y_classes', JSON.stringify(classes));
+    } catch (e) {}
+  }
+
+  function loadA11ySettings() {
+    try {
+      const classes = JSON.parse(localStorage.getItem('eitan_a11y_classes') || '[]');
+      classes.forEach(cls => document.body.classList.add(cls));
+    } catch (e) {}
+  }
+
+  function setTextSize(size) {
+    document.body.classList.remove('a11y-large', 'a11y-larger');
+
+    if (size === 'large') {
+      document.body.classList.add('a11y-large');
+    }
+
+    if (size === 'larger') {
+      document.body.classList.add('a11y-larger');
+    }
+
+    persistA11ySettings();
+  }
+
+  function toggleA11yClass(cls) {
+    document.body.classList.toggle(cls);
+    persistA11ySettings();
+  }
+
+  function resetAccessibility() {
+    document.body.classList.remove('a11y-large', 'a11y-larger', 'a11y-contrast', 'a11y-readable', 'a11y-links');
+    try {
+      localStorage.removeItem('eitan_a11y_classes');
+    } catch (e) {}
+  }
+
   // ─── INIT ──────────────────────────────────────
+  loadA11ySettings();
   checkOrderStatus();
   loadProducts();
 </script>
