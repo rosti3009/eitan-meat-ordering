@@ -1,1938 +1,265 @@
-<!DOCTYPE html>
-<html lang="he" dir="rtl">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#0a0a0a" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="איתן מעדני בשר" />
-  <title>איתן מעדני בשר – הזמנות</title>
-
-  <!-- PWA Manifest -->
-  <link rel="manifest" href="manifest.json" />
-
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@300;400;500;700;900&family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-
-  <style>
-    /* ═══════════════════════════════════════════
-       DESIGN TOKENS
-    ═══════════════════════════════════════════ */
-    :root {
-      --black:       #080808;
-      --black-2:     #111111;
-      --black-3:     #1a1a1a;
-      --black-4:     #232323;
-      --black-5:     #2c2c2c;
-      --red:         #8b1a1a;
-      --red-deep:    #6b1010;
-      --red-light:   #c0392b;
-      --red-glow:    rgba(139, 26, 26, 0.35);
-      --gold:        #c9983a;
-      --gold-light:  #e8b84b;
-      --gold-pale:   rgba(201, 152, 58, 0.12);
-      --gold-glow:   rgba(201, 152, 58, 0.3);
-      --white:       #f5f0e8;
-      --white-dim:   #c8bfb0;
-      --white-faint: rgba(245, 240, 232, 0.06);
-      --border:      rgba(201, 152, 58, 0.18);
-      --border-dim:  rgba(255, 255, 255, 0.07);
-
-      --font-display: 'Frank Ruhl Libre', serif;
-      --font-body:    'Heebo', sans-serif;
-
-      --radius:    14px;
-      --radius-sm:  8px;
-      --radius-lg: 20px;
-
-      --shadow-card: 0 4px 24px rgba(0,0,0,0.5), 0 1px 0 rgba(201,152,58,0.08) inset;
-      --shadow-btn:  0 4px 20px rgba(139,26,26,0.5);
-      --shadow-gold: 0 4px 20px rgba(201,152,58,0.25);
-
-      --safe-bottom: env(safe-area-inset-bottom, 0px);
-    }
-
-    /* ═══════════════════════════════════════════
-       RESET & BASE
-    ═══════════════════════════════════════════ */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    html {
-      scroll-behavior: smooth;
-      -webkit-text-size-adjust: 100%;
-    }
-
-    body {
-      background: var(--black);
-      color: var(--white);
-      font-family: var(--font-body);
-      font-size: 16px;
-      line-height: 1.5;
-      min-height: 100dvh;
-      overflow-x: hidden;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    button { font-family: var(--font-body); cursor: pointer; border: none; outline: none; }
-    input, textarea, select { font-family: var(--font-body); outline: none; }
-    a { color: inherit; text-decoration: none; }
-    img { display: block; max-width: 100%; }
-
-    /* ═══════════════════════════════════════════
-       UTILITY
-    ═══════════════════════════════════════════ */
-    .hidden { display: none !important; }
-    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
-
-    /* ═══════════════════════════════════════════
-       HEADER
-    ═══════════════════════════════════════════ */
-    #header {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background: linear-gradient(180deg, #0a0a0a 85%, transparent);
-      padding: 14px 18px 10px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid var(--border-dim);
-    }
-
-    .logo-wrap { display: flex; flex-direction: column; gap: 1px; }
-    .logo-he {
-      font-family: var(--font-display);
-      font-size: 20px;
-      font-weight: 900;
-      color: var(--white);
-      letter-spacing: -0.3px;
-      line-height: 1;
-    }
-    .logo-sub {
-      font-size: 10px;
-      font-weight: 400;
-      color: var(--gold);
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-    }
-
-    /* ═══════════════════════════════════════════
-       CART BUTTON (sticky)
-    ═══════════════════════════════════════════ */
-    #cart-fab {
-      position: relative;
-      background: var(--red);
-      color: var(--white);
-      border-radius: 50px;
-      padding: 10px 18px;
-      font-size: 14px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: background 0.2s, transform 0.15s;
-      box-shadow: var(--shadow-btn);
-    }
-    #cart-fab:active { transform: scale(0.96); }
-    #cart-fab.has-items { background: var(--red-light); }
-    #cart-badge {
-      background: var(--gold);
-      color: var(--black);
-      border-radius: 50%;
-      width: 20px; height: 20px;
-      font-size: 11px;
-      font-weight: 800;
-      display: flex; align-items: center; justify-content: center;
-      position: absolute;
-      top: -6px; left: -6px;
-    }
-
-    /* ═══════════════════════════════════════════
-       ORDER CLOSED BANNER
-    ═══════════════════════════════════════════ */
-    #closed-banner {
-      background: linear-gradient(135deg, var(--red-deep), #3d0a0a);
-      border: 1px solid rgba(139,26,26,0.6);
-      margin: 12px 16px;
-      border-radius: var(--radius);
-      padding: 14px 18px;
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-    }
-    .closed-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
-    .closed-title { font-weight: 700; font-size: 15px; margin-bottom: 3px; }
-    .closed-sub { font-size: 13px; color: var(--white-dim); line-height: 1.4; }
-
-    /* ═══════════════════════════════════════════
-       HERO
-    ═══════════════════════════════════════════ */
-    #hero {
-      position: relative;
-      height: 220px;
-      overflow: hidden;
-      margin: 0 0 0 0;
-    }
-    #hero-img {
-      width: 100%; height: 100%;
-      object-fit: cover;
-      object-position: center 40%;
-      filter: brightness(0.45) saturate(1.1);
-    }
-    #hero-overlay {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(180deg,
-        rgba(8,8,8,0.1) 0%,
-        rgba(8,8,8,0.0) 30%,
-        rgba(8,8,8,0.7) 70%,
-        rgba(8,8,8,1) 100%
-      );
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-      padding: 20px 20px 24px;
-    }
-    .hero-tagline {
-      font-family: var(--font-display);
-      font-size: 26px;
-      font-weight: 900;
-      line-height: 1.15;
-      color: var(--white);
-      text-shadow: 0 2px 12px rgba(0,0,0,0.7);
-    }
-    .hero-tagline span { color: var(--gold); }
-    .hero-sub {
-      font-size: 13px;
-      color: var(--white-dim);
-      margin-top: 5px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .hero-dot {
-      width: 6px; height: 6px;
-      background: var(--gold);
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-
-    /* ═══════════════════════════════════════════
-       CATEGORY TABS
-    ═══════════════════════════════════════════ */
-    #cats-wrap {
-      position: sticky;
-      top: 62px;
-      z-index: 90;
-      background: var(--black);
-      border-bottom: 1px solid var(--border-dim);
-    }
-    #cats-scroll {
-      display: flex;
-      gap: 4px;
-      overflow-x: auto;
-      padding: 10px 14px;
-      scrollbar-width: none;
-      -webkit-overflow-scrolling: touch;
-    }
-    #cats-scroll::-webkit-scrollbar { display: none; }
-
-    .cat-btn {
-      flex-shrink: 0;
-      background: var(--black-3);
-      color: var(--white-dim);
-      border: 1px solid var(--border-dim);
-      border-radius: 50px;
-      padding: 8px 16px;
-      font-size: 13px;
-      font-weight: 600;
-      white-space: nowrap;
-      transition: all 0.2s;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .cat-btn.active {
-      background: var(--red);
-      color: var(--white);
-      border-color: var(--red);
-      box-shadow: 0 2px 12px var(--red-glow);
-    }
-    .cat-btn:active { opacity: 0.8; }
-
-    /* ═══════════════════════════════════════════
-       PRODUCT GRID
-    ═══════════════════════════════════════════ */
-    #products-section {
-      padding: 16px 14px 140px;
-    }
-
-    .section-title {
-      font-family: var(--font-display);
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--gold);
-      margin: 4px 0 14px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .section-title::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--border);
-    }
-
-    #products-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-
-    /* ─── Product Card ─── */
-    .product-card {
-      background: var(--black-3);
-      border: 1px solid var(--border-dim);
-      border-radius: var(--radius);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      box-shadow: var(--shadow-card);
-      transition: transform 0.2s, border-color 0.2s;
-      -webkit-tap-highlight-color: transparent;
-      animation: fadeUp 0.35s ease both;
-    }
-    .product-card.vip-card {
-      border-color: rgba(201,152,58,0.3);
-    }
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(16px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    .card-img-wrap {
-      position: relative;
-      height: 130px;
-      overflow: hidden;
-      background: var(--black-4);
-    }
-    .card-img {
-      width: 100%; height: 100%;
-      object-fit: cover;
-      transition: transform 0.4s;
-      background: var(--black-4);
-    }
-    .card-img-wrap:active .card-img { transform: scale(1.04); }
-
-    .card-badge {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      background: var(--red);
-      color: var(--white);
-      font-size: 10px;
-      font-weight: 800;
-      padding: 3px 8px;
-      border-radius: 20px;
-      letter-spacing: 0.3px;
-    }
-    .card-badge.gold { background: var(--gold); color: var(--black); }
-    .card-vip {
-      position: absolute;
-      top: 8px;
-      left: 8px;
-      background: linear-gradient(135deg, var(--gold), #a07020);
-      color: var(--black);
-      font-size: 9px;
-      font-weight: 800;
-      padding: 3px 7px;
-      border-radius: 20px;
-      letter-spacing: 0.5px;
-    }
-
-    .card-body {
-      padding: 11px 11px 8px;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
-    .card-name {
-      font-family: var(--font-display);
-      font-size: 15px;
-      font-weight: 700;
-      line-height: 1.25;
-      color: var(--white);
-      margin-bottom: 4px;
-    }
-    .card-desc {
-      font-size: 11.5px;
-      color: var(--white-dim);
-      line-height: 1.4;
-      flex: 1;
-    }
-    .card-price-row {
-      display: flex;
-      align-items: baseline;
-      gap: 4px;
-      margin-top: 8px;
-    }
-    .card-price {
-      font-size: 18px;
-      font-weight: 800;
-      color: var(--gold-light);
-    }
-    .card-unit {
-      font-size: 11px;
-      color: var(--white-dim);
-    }
-
-    /* Qty + Add */
-    .card-controls {
-      padding: 0 11px 11px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .qty-wrap {
-      display: flex;
-      align-items: center;
-      gap: 0;
-      background: var(--black-5);
-      border-radius: var(--radius-sm);
-      overflow: hidden;
-      flex-shrink: 0;
-    }
-    .qty-btn {
-      background: transparent;
-      color: var(--white);
-      width: 30px; height: 30px;
-      font-size: 17px;
-      display: flex; align-items: center; justify-content: center;
-      transition: background 0.15s;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .qty-btn:active { background: var(--black-4); }
-    .qty-val {
-      font-size: 14px;
-      font-weight: 700;
-      min-width: 24px;
-      text-align: center;
-      color: var(--white);
-    }
-    .add-btn {
-      flex: 1;
-      background: var(--red);
-      color: var(--white);
-      border-radius: var(--radius-sm);
-      font-size: 12px;
-      font-weight: 700;
-      padding: 8px 6px;
-      text-align: center;
-      transition: background 0.2s, transform 0.15s;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .add-btn:active { transform: scale(0.96); background: var(--red-light); }
-    .add-btn.added {
-      background: linear-gradient(135deg, #1a5c1a, #2d8a2d);
-    }
-
-    /* ═══════════════════════════════════════════
-       CART DRAWER
-    ═══════════════════════════════════════════ */
-    #cart-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.7);
-      z-index: 200;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s;
-    }
-    #cart-overlay.open { opacity: 1; pointer-events: all; }
-
-    #cart-drawer {
-      position: fixed;
-      bottom: 0; left: 0; right: 0;
-      background: var(--black-2);
-      border-radius: 22px 22px 0 0;
-      border-top: 1px solid var(--border);
-      z-index: 201;
-      max-height: 85dvh;
-      display: flex;
-      flex-direction: column;
-      transform: translateY(100%);
-      transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
-      padding-bottom: calc(16px + var(--safe-bottom));
-    }
-    #cart-drawer.open { transform: translateY(0); }
-
-    .drawer-handle {
-      width: 40px; height: 4px;
-      background: var(--black-5);
-      border-radius: 2px;
-      margin: 12px auto 0;
-    }
-    .drawer-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 14px 20px 10px;
-      border-bottom: 1px solid var(--border-dim);
-    }
-    .drawer-title {
-      font-family: var(--font-display);
-      font-size: 20px;
-      font-weight: 800;
-    }
-    .drawer-close {
-      background: var(--black-4);
-      color: var(--white-dim);
-      border-radius: 50%;
-      width: 32px; height: 32px;
-      font-size: 18px;
-      display: flex; align-items: center; justify-content: center;
-    }
-
-    #cart-items {
-      flex: 1;
-      overflow-y: auto;
-      padding: 12px 16px;
-      scrollbar-width: thin;
-      scrollbar-color: var(--black-5) transparent;
-    }
-
-    .cart-empty {
-      text-align: center;
-      padding: 40px 20px;
-      color: var(--white-dim);
-    }
-    .cart-empty-icon { font-size: 44px; margin-bottom: 12px; }
-    .cart-empty-txt { font-size: 15px; }
-
-    .cart-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 0;
-      border-bottom: 1px solid var(--border-dim);
-    }
-    .cart-item:last-child { border-bottom: none; }
-    .ci-img {
-      width: 54px; height: 54px;
-      border-radius: 10px;
-      object-fit: cover;
-      flex-shrink: 0;
-      background: var(--black-4);
-    }
-    .ci-info { flex: 1; }
-    .ci-name {
-      font-size: 14px;
-      font-weight: 700;
-      margin-bottom: 2px;
-    }
-    .ci-price {
-      font-size: 12px;
-      color: var(--gold);
-    }
-    .ci-qty-wrap {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .ci-qty-btn {
-      background: var(--black-4);
-      color: var(--white);
-      border-radius: 50%;
-      width: 28px; height: 28px;
-      font-size: 16px;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .ci-qty-val {
-      font-size: 15px;
-      font-weight: 700;
-      min-width: 20px;
-      text-align: center;
-    }
-
-    .cart-footer {
-      padding: 14px 16px 6px;
-      border-top: 1px solid var(--border-dim);
-    }
-    .cart-total-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 6px;
-    }
-    .cart-total-label { font-size: 14px; color: var(--white-dim); }
-    .cart-total-val {
-      font-size: 22px;
-      font-weight: 800;
-      color: var(--gold-light);
-    }
-    .cart-price-note {
-      font-size: 11px;
-      color: var(--white-dim);
-      text-align: center;
-      margin-bottom: 12px;
-      line-height: 1.4;
-    }
-    .checkout-btn {
-      width: 100%;
-      background: linear-gradient(135deg, var(--red-light), var(--red-deep));
-      color: var(--white);
-      border-radius: 14px;
-      padding: 16px;
-      font-size: 17px;
-      font-weight: 800;
-      letter-spacing: 0.3px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      box-shadow: var(--shadow-btn);
-      transition: transform 0.15s, box-shadow 0.15s;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .checkout-btn:active { transform: scale(0.98); }
-
-    /* ═══════════════════════════════════════════
-       CHECKOUT MODAL
-    ═══════════════════════════════════════════ */
-    #checkout-overlay {
-      position: fixed;
-      inset: 0;
-      background: var(--black);
-      z-index: 300;
-      display: flex;
-      flex-direction: column;
-      transform: translateX(-100%);
-      transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
-    }
-    #checkout-overlay.open { transform: translateX(0); }
-
-    .checkout-header {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      padding: 16px 18px;
-      border-bottom: 1px solid var(--border-dim);
-      background: var(--black-2);
-    }
-    .back-btn {
-      background: var(--black-4);
-      color: var(--white);
-      border-radius: 50%;
-      width: 36px; height: 36px;
-      font-size: 18px;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .checkout-title {
-      font-family: var(--font-display);
-      font-size: 20px;
-      font-weight: 800;
-    }
-
-    .checkout-body {
-      flex: 1;
-      overflow-y: auto;
-      padding: 20px 18px calc(100px + var(--safe-bottom));
-    }
-
-    .form-section-title {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--gold);
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      margin: 20px 0 12px;
-    }
-    .form-section-title:first-child { margin-top: 0; }
-
-    .field-wrap { margin-bottom: 14px; }
-    .field-label {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--white-dim);
-      margin-bottom: 6px;
-      display: block;
-    }
-    .field-input {
-      width: 100%;
-      background: var(--black-3);
-      border: 1px solid var(--border-dim);
-      border-radius: var(--radius-sm);
-      padding: 13px 15px;
-      font-size: 15px;
-      color: var(--white);
-      transition: border-color 0.2s;
-      -webkit-appearance: none;
-    }
-    .field-input:focus { border-color: var(--gold); }
-    .field-input::placeholder { color: var(--black-5); }
-
-    .order-type-wrap {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-    .order-type-btn {
-      background: var(--black-3);
-      border: 2px solid var(--border-dim);
-      border-radius: var(--radius-sm);
-      padding: 14px 10px;
-      color: var(--white-dim);
-      font-size: 14px;
-      font-weight: 700;
-      text-align: center;
-      transition: all 0.2s;
-      -webkit-tap-highlight-color: transparent;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 5px;
-    }
-    .order-type-btn .type-icon { font-size: 22px; }
-    .order-type-btn.selected {
-      border-color: var(--gold);
-      color: var(--gold);
-      background: var(--gold-pale);
-    }
-
-    /* Order summary mini */
-    .order-summary-box {
-      background: var(--black-3);
-      border: 1px solid var(--border-dim);
-      border-radius: var(--radius);
-      padding: 14px;
-      margin-bottom: 16px;
-    }
-    .osb-title {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--gold);
-      letter-spacing: 0.8px;
-      text-transform: uppercase;
-      margin-bottom: 10px;
-    }
-    .osb-row {
-      display: flex;
-      justify-content: space-between;
-      font-size: 13px;
-      padding: 4px 0;
-      border-bottom: 1px solid var(--border-dim);
-    }
-    .osb-row:last-child { border-bottom: none; padding-bottom: 0; }
-    .osb-name { color: var(--white-dim); }
-    .osb-qty { color: var(--white); font-weight: 700; }
-    .osb-total-row {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 10px;
-      padding-top: 10px;
-      border-top: 1px solid var(--border);
-    }
-    .osb-total-label { font-size: 14px; font-weight: 700; }
-    .osb-total-val { font-size: 18px; font-weight: 800; color: var(--gold-light); }
-
-    .checkout-fixed-footer {
-      position: fixed;
-      bottom: 0; left: 0; right: 0;
-      padding: 12px 18px calc(12px + var(--safe-bottom));
-      background: linear-gradient(180deg, transparent 0%, var(--black) 30%);
-    }
-    .whatsapp-btn {
-      width: 100%;
-      background: linear-gradient(135deg, var(--red-light), var(--red-deep));
-      color: #fff;
-      border-radius: 14px;
-      padding: 16px;
-      font-size: 17px;
-      font-weight: 800;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      box-shadow: var(--shadow-btn);
-      transition: transform 0.15s;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .whatsapp-btn:active { transform: scale(0.98); }
-    .whatsapp-btn:disabled { opacity: 0.6; }
-    .wa-icon { font-size: 22px; }
-
-    /* ═══════════════════════════════════════════
-       SUCCESS SCREEN
-    ═══════════════════════════════════════════ */
-    #success-screen {
-      position: fixed;
-      inset: 0;
-      background: var(--black);
-      z-index: 400;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 40px 30px;
-      text-align: center;
-      transform: scale(0.9);
-      opacity: 0;
-      pointer-events: none;
-      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-    #success-screen.open {
-      transform: scale(1);
-      opacity: 1;
-      pointer-events: all;
-    }
-    .success-icon { font-size: 72px; margin-bottom: 20px; }
-    .success-title {
-      font-family: var(--font-display);
-      font-size: 28px;
-      font-weight: 900;
-      margin-bottom: 10px;
-    }
-    .success-sub {
-      font-size: 15px;
-      color: var(--white-dim);
-      line-height: 1.6;
-      margin-bottom: 30px;
-    }
-    .success-new-btn {
-      background: var(--black-3);
-      color: var(--gold);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 14px 32px;
-      font-size: 15px;
-      font-weight: 700;
-    }
-
-    /* ═══════════════════════════════════════════
-       TOAST
-    ═══════════════════════════════════════════ */
-    #toast {
-      position: fixed;
-      bottom: 90px;
-      left: 50%;
-      transform: translateX(-50%) translateY(20px);
-      background: #222;
-      color: var(--white);
-      border: 1px solid var(--border);
-      border-radius: 50px;
-      padding: 10px 20px;
-      font-size: 13px;
-      font-weight: 600;
-      white-space: nowrap;
-      z-index: 500;
-      opacity: 0;
-      transition: all 0.3s;
-      pointer-events: none;
-    }
-    #toast.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
-
-    /* ═══════════════════════════════════════════
-       GOLD DIVIDER
-    ═══════════════════════════════════════════ */
-    .gold-divider {
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--gold), transparent);
-      margin: 20px 0;
-      opacity: 0.4;
-    }
-
-
-    /* ═══════════════════════════════════════════
-       ACCESSIBILITY WIDGET
-    ═══════════════════════════════════════════ */
-    #accessibility-toggle {
-      position: fixed;
-      left: 14px;
-      bottom: 155px;
-      z-index: 650;
-      width: 46px;
-      height: 46px;
-      border-radius: 50%;
-      background: var(--gold);
-      color: var(--black);
-      font-size: 22px;
-      font-weight: 900;
-      box-shadow: var(--shadow-gold);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    #accessibility-panel {
-      position: fixed;
-      left: 14px;
-      bottom: 208px;
-      z-index: 651;
-      width: min(280px, calc(100vw - 28px));
-      background: var(--black-2);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 12px;
-      box-shadow: var(--shadow-card);
-      display: none;
-    }
-
-    #accessibility-panel.open {
-      display: block;
-    }
-
-    .accessibility-title {
-      font-size: 14px;
-      font-weight: 800;
-      color: var(--gold);
-      margin-bottom: 10px;
-    }
-
-    .accessibility-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-
-    .accessibility-btn {
-      background: var(--black-3);
-      color: var(--white);
-      border: 1px solid var(--border-dim);
-      border-radius: var(--radius-sm);
-      padding: 10px 8px;
-      font-size: 13px;
-      font-weight: 700;
-    }
-
-    .accessibility-btn:focus,
-    #accessibility-toggle:focus,
-    button:focus,
-    input:focus,
-    textarea:focus {
-      outline: 3px solid var(--gold-light);
-      outline-offset: 2px;
-    }
-
-    body.a11y-large {
-      font-size: 18px;
-    }
-
-    body.a11y-larger {
-      font-size: 20px;
-    }
-
-    body.a11y-readable {
-      font-family: Arial, sans-serif;
-    }
-
-    body.a11y-links a,
-    body.a11y-links button {
-      text-decoration: underline;
-    }
-
-    body.a11y-contrast {
-      --black: #000;
-      --black-2: #000;
-      --black-3: #111;
-      --black-4: #111;
-      --black-5: #222;
-      --white: #fff;
-      --white-dim: #fff;
-      --gold: #ffd400;
-      --gold-light: #ffe45c;
-      --red: #b00000;
-      --red-light: #d00000;
-      --border-dim: rgba(255,255,255,0.35);
-      --border: rgba(255,212,0,0.65);
-    }
-
-    body.a11y-contrast .card-desc,
-    body.a11y-contrast .closed-sub,
-    body.a11y-contrast .cart-price-note,
-    body.a11y-contrast .field-label,
-    body.a11y-contrast .card-unit {
-      color: #fff;
-    }
-
-    /* ═══════════════════════════════════════════
-       LEGAL / MARKETING CONSENT BOX
-    ═══════════════════════════════════════════ */
-    .legal-box {
-      background: var(--black-3);
-      border: 1px solid var(--border-dim);
-      border-radius: var(--radius);
-      padding: 12px 14px;
-      margin-top: 16px;
-      font-size: 12px;
-      color: var(--white-dim);
-      line-height: 1.6;
-    }
-
-    .legal-check-row {
-      display: flex;
-      align-items: flex-start;
-      gap: 8px;
-      margin-top: 10px;
-      color: var(--white);
-      font-size: 12px;
-      font-weight: 600;
-    }
-
-    .legal-check-row input {
-      width: 18px;
-      height: 18px;
-      margin-top: 2px;
-      flex-shrink: 0;
-      accent-color: var(--gold);
-    }
-
-    .legal-small {
-      margin-top: 8px;
-      font-size: 11px;
-      color: var(--white-dim);
-    }
-
-    /* ═══════════════════════════════════════════
-       RESPONSIVE TWEAKS
-    ═══════════════════════════════════════════ */
-    @media (min-width: 420px) {
-      .hero-tagline { font-size: 30px; }
-      .card-img-wrap { height: 150px; }
-      #products-grid { grid-template-columns: repeat(2, 1fr); }
-    }
-    @media (min-width: 640px) {
-      #products-grid { grid-template-columns: repeat(3, 1fr); }
-      #hero { height: 280px; }
-    }
-    @media (min-width: 900px) {
-      body { max-width: 480px; margin: 0 auto; }
-      #header, #cats-wrap { max-width: 480px; left: 50%; transform: translateX(-50%); right: auto; width: 100%; }
-      #cart-drawer { max-width: 480px; left: 50%; right: auto; transform: translateX(-50%) translateY(100%); }
-      #cart-drawer.open { transform: translateX(-50%) translateY(0); }
-    }
-  </style>
-</head>
-<body>
-
-<!-- HEADER -->
-<header id="header">
-  <div class="logo-wrap">
-    <span class="logo-he">איתן מעדני בשר</span>
-    <span class="logo-sub">Eilat · Premium Butcher</span>
-  </div>
-  <button id="cart-fab" onclick="openCart()" aria-label="עגלת קניות">
-    <span id="cart-badge" class="hidden">0</span>
-    🛒 <span id="cart-fab-label">סל</span>
-  </button>
-</header>
-
-<!-- ORDER CLOSED BANNER -->
-<div id="closed-banner" class="hidden">
-  <div class="closed-icon">🚫</div>
-  <div>
-    <div class="closed-title">הזמנות סגורות כרגע</div>
-    <div class="closed-sub" id="closed-sub-txt">ניתן להזמין למשלוח הבא</div>
-  </div>
-</div>
-
-<!-- HERO -->
-<section id="hero">
-  <img
-    id="hero-img"
-    src="https://images.unsplash.com/photo-1558030006-450675393462?w=900&q=85"
-    alt="בשר פרמיום"
-    loading="eager"
-  />
-  <div id="hero-overlay">
-    <div class="hero-tagline">בשר איכות.<br/><span>ישירות אליך.</span></div>
-    <div class="hero-sub">
-      <div class="hero-dot"></div>
-      <span>בשר טרי · אילת · הזמנה ישירה להדפסה</span>
-    </div>
-  </div>
-</section>
-
-<!-- CATEGORY TABS -->
-<nav id="cats-wrap" aria-label="קטגוריות">
-  <div id="cats-scroll"></div>
-</nav>
-
-<!-- PRODUCTS -->
-<main id="products-section">
-  <div id="cat-label" class="section-title"></div>
-  <div id="products-grid" role="list"></div>
-</main>
-
-<!-- CART OVERLAY + DRAWER -->
-<div id="cart-overlay" onclick="closeCart()"></div>
-<div id="cart-drawer" role="dialog" aria-label="עגלת קניות" aria-modal="true">
-  <div class="drawer-handle"></div>
-  <div class="drawer-header">
-    <span class="drawer-title">🛒 הסל שלך</span>
-    <button class="drawer-close" onclick="closeCart()">✕</button>
-  </div>
-  <div id="cart-items"></div>
-  <div class="cart-footer">
-    <div class="cart-total-row">
-      <span class="cart-total-label">סה״כ משוער:</span>
-      <span class="cart-total-val" id="cart-total-display">₪0</span>
-    </div>
-    <div class="cart-price-note">* המחיר הסופי נקבע לאחר שקילה בפועל</div>
-    <button class="checkout-btn" onclick="goToCheckout()">
-      לפרטי ההזמנה 📋
-    </button>
-  </div>
-</div>
-<!-- CHECKOUT SCREEN -->
-<div id="checkout-overlay" role="dialog" aria-label="פרטי הזמנה" aria-modal="true">
-  <div class="checkout-header">
-    <button class="back-btn" onclick="closeCheckout()">→</button>
-    <span class="checkout-title">פרטי הזמנה</span>
-  </div>
-  <div class="checkout-body">
-
-    <div class="form-section-title">סיכום הזמנה</div>
-    <div class="order-summary-box" id="order-summary-box"></div>
-
-    <div class="form-section-title">פרטים אישיים</div>
-
-    <div class="field-wrap">
-      <label class="field-label" for="f-name">שם מלא *</label>
-      <input class="field-input" id="f-name" type="text" placeholder="ישראל ישראלי" autocomplete="name" />
-    </div>
-
-    <div class="field-wrap">
-      <label class="field-label" for="f-phone">טלפון *</label>
-      <input class="field-input" id="f-phone" type="tel" placeholder="050-0000000" autocomplete="tel" inputmode="tel" />
-    </div>
-
-    <div class="field-wrap">
-      <label class="field-label" for="f-city">עיר / אזור *</label>
-      <input class="field-input" id="f-city" type="text" placeholder="אילת" autocomplete="address-level2" />
-    </div>
-
-    <div class="form-section-title">סוג הזמנה</div>
-    <div class="order-type-wrap">
-      <button class="order-type-btn selected" id="btn-type-pickup" onclick="selectOrderType('pickup')">
-        <span class="type-icon">🏪</span>
-        <span>איסוף עצמי</span>
-      </button>
-      <button class="order-type-btn" id="btn-type-delivery" onclick="selectOrderType('delivery')">
-        <span class="type-icon">🚚</span>
-        <span>משלוח</span>
-      </button>
-    </div>
-
-    <div class="field-wrap" style="margin-top:14px">
-      <label class="field-label" for="f-notes">הערות (אופציונלי)</label>
-      <textarea
-        class="field-input"
-        id="f-notes"
-        rows="3"
-        placeholder="חיתוך מיוחד, דרישות ספציפיות..."
-        style="resize:none"
-      ></textarea>
-    </div>
-
-
-    <div class="legal-box">
-      <div>
-        שליחת ההזמנה מיועדת לטיפול בהזמנה, יצירת קשר, אישור מלאי, שקילה ותשלום בפועל.
-      </div>
-
-      <label class="legal-check-row" for="f-marketing-consent">
-        <input id="f-marketing-consent" type="checkbox" />
-        <span>
-          אני מאשר/ת קבלת הודעות ועדכונים שיווקיים, מבצעים והטבות מאיתן מעדני בשר באמצעי קשר שמסרתי.
-        </span>
-      </label>
-
-      <div class="legal-small">
-        האישור לדיוור שיווקי אינו חובה לצורך ביצוע הזמנה. ניתן לבקש הסרה מרשימת הדיוור בכל עת.
-      </div>
-    </div>
-
-
-    <div class="gold-divider"></div>
-
-    <div style="font-size:12px;color:var(--white-dim);text-align:center;line-height:1.6;padding-bottom:10px">
-      לחיצה על ״הורד הזמנה כ-PDF״ תיצור קובץ PDF מוכן<br/>
-      להדפסה ישירות במכשיר שלך
-    </div>
-
-  </div>
-
-  <div class="checkout-fixed-footer">
-    <button class="whatsapp-btn" onclick="generateOrderPDF()">
-      <span class="wa-icon">📄</span>
-      הורד הזמנה כ-PDF
-    </button>
-  </div>
-</div>
-
-<!-- SUCCESS -->
-<div id="success-screen">
-  <div class="success-icon">✅</div>
-  <div class="success-title">ההזמנה התקבלה!</div>
-  <div class="success-sub">
-    ההזמנה נשמרה במערכת ונוצר קובץ להדפסה.<br/>
-    נחזור אליך בהקדם לאישור סופי.
-  </div>
-  <button class="success-new-btn" onclick="resetOrder()">הזמנה חדשה</button>
-</div>
-
-<!-- TOAST -->
-<div id="toast"></div>
-
-
-<!-- ACCESSIBILITY -->
-<button id="accessibility-toggle" type="button" onclick="toggleAccessibilityPanel()" aria-label="פתיחת תפריט נגישות">
-  ♿
-</button>
-
-<div id="accessibility-panel" role="dialog" aria-label="תפריט נגישות">
-  <div class="accessibility-title">אפשרויות נגישות</div>
-  <div class="accessibility-grid">
-    <button class="accessibility-btn" type="button" onclick="setTextSize('large')">הגדלת טקסט</button>
-    <button class="accessibility-btn" type="button" onclick="setTextSize('larger')">טקסט גדול מאוד</button>
-    <button class="accessibility-btn" type="button" onclick="toggleA11yClass('a11y-contrast')">ניגודיות גבוהה</button>
-    <button class="accessibility-btn" type="button" onclick="toggleA11yClass('a11y-readable')">פונט קריא</button>
-    <button class="accessibility-btn" type="button" onclick="toggleA11yClass('a11y-links')">הדגשת כפתורים</button>
-    <button class="accessibility-btn" type="button" onclick="resetAccessibility()">איפוס</button>
-  </div>
-</div>
-
-<!-- DATA -->
-
-<!-- APP LOGIC -->
-<script>
-  // ─── Business config + API server ───
-  const BUSINESS_CONFIG = {
-    name: "איתן מעדני בשר",
-    nameEn: "Eitan Meat Delicacies",
-    phone: "972501234567",
-    location: "אילת",
-    orderCutoffDay: 2,
-    orderCutoffHour: 12,
-    deliveryDay: "חמישי",
-    deliveryNote: "משלוחים כל יום חמישי לאזור הערבה ואילת",
-  };
-
-  const API_BASE = "https://eitan-meat-ordering.onrender.com";
-
-  let PRODUCTS = [];
-  let CATEGORIES = [];
-
-  // ─── State ─────────────────────────────────────
-  const cart = {}; // { productId: quantity }
-  let currentCat = null;
-  let orderType = 'pickup';
-
-  async function loadProducts() {
-    const grid = document.getElementById('products-grid');
-    const label = document.getElementById('cat-label');
-
-    try {
-      label.textContent = 'טוען מוצרים...';
-      grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--white-dim)">טוען מחירון מהמערכת...</div>`;
-
-      const res = await fetch(`${API_BASE}/products`, { method: 'GET' });
-      const json = await res.json();
-
-      if (!json.success || !Array.isArray(json.products)) {
-        throw new Error(json.error || 'תשובה לא תקינה מהשרת');
-      }
-
-      PRODUCTS = json.products
-        .filter(p => p && p.id && p.name)
-        .map(p => ({
-          id: String(p.id),
-          category: String(p.category || 'כללי'),
-          name: String(p.name || ''),
-          description: String(p.description || ''),
-          price: Number(p.price) || 0,
-          unit: String(p.unit || ''),
-          image: p.image ? String(p.image) : getImageByCategory(String(p.category || '')),
-          vip: String(p.vip || '').toUpperCase() === 'TRUE' || p.vip === true,
-          badge: p.badge ? String(p.badge) : null
-        }));
-
-      buildCategories();
-      renderCats();
-      renderProducts();
-      updateCartUI();
-
-    } catch (err) {
-      console.error('שגיאה בטעינת מוצרים:', err);
-      label.textContent = 'שגיאה בטעינת מוצרים';
-      grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--white-dim)">לא ניתן לטעון מוצרים מהשיטס. בדוק שהפריסה פעילה ושהקישור תקין.</div>`;
-      showToast('שגיאה בחיבור לשיטס ⚠️');
-    }
-  }
-
-  function buildCategories() {
-    const unique = [...new Set(PRODUCTS.map(p => p.category).filter(Boolean))];
-
-    CATEGORIES = unique.map(cat => ({
-      id: cat,
-      label: `${getCategoryIcon(cat)} ${cat}`,
-      icon: getCategoryIcon(cat)
-    }));
-
-    currentCat = CATEGORIES.length ? CATEGORIES[0].id : null;
-  }
-
-  function getCategoryIcon(cat) {
-    if (cat.includes('בשר') || cat.includes('בקר')) return '🥩';
-    if (cat.includes('עוף') || cat.includes('עופות')) return '🍗';
-    if (cat.includes('טחונים') || cat.includes('נקניקים') || cat.includes('קבב')) return '🔥';
-    if (cat.includes('דגים')) return '🐟';
-    if (cat.includes('כבש') || cat.includes('טלה')) return '🍖';
-    if (cat.includes('מבצע')) return '⚡';
-    return '📦';
-  }
-
-  function getImageByCategory(cat) {
-    if (cat.includes('עוף') || cat.includes('עופות')) {
-      return "https://images.unsplash.com/photo-1604503468506-a8da13d82791?w=600&q=80";
-    }
-    if (cat.includes('דגים')) {
-      return "https://images.unsplash.com/photo-1574781330855-d0db3b4dc3a8?w=600&q=80";
-    }
-    return "https://images.unsplash.com/photo-1588347818036-539ce8dc2b93?w=600&q=80";
-  }
-
-  // ─── Order Status ───────────────────────────────
-  function checkOrderStatus() {
-    const now = new Date();
-    const day = now.getDay();
-    const hour = now.getHours();
-    const min = now.getMinutes();
-    const cutoffDay  = BUSINESS_CONFIG.orderCutoffDay;
-    const cutoffHour = BUSINESS_CONFIG.orderCutoffHour;
-
-    const isClosed = (
-      (day === cutoffDay && (hour > cutoffHour || (hour === cutoffHour && min >= 0))) ||
-      (day === (cutoffDay + 1) % 7)
-    );
-
-    if (isClosed) {
-      const banner = document.getElementById('closed-banner');
-      const sub    = document.getElementById('closed-sub-txt');
-      banner.classList.remove('hidden');
-      sub.textContent = `הזמנות סגורות – ניתן להזמין למשלוח הבא (${BUSINESS_CONFIG.deliveryDay})`;
-    }
-  }
-
-  // ─── Render categories ─────────────────────────
-  function renderCats() {
-    const wrap = document.getElementById('cats-scroll');
-    if (!CATEGORIES.length) {
-      wrap.innerHTML = '';
-      return;
-    }
-    wrap.innerHTML = CATEGORIES.map(c => `
-      <button
-        class="cat-btn ${c.id === currentCat ? 'active' : ''}"
-        onclick="selectCat('${c.id}')"
-        aria-pressed="${c.id === currentCat}"
-      >${c.label}</button>
-    `).join('');
-  }
-
-  function selectCat(id) {
-    currentCat = id;
-    renderCats();
-    renderProducts();
-    document.getElementById('products-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-
-  // ─── Render products ───────────────────────────
-  function renderProducts() {
-    const grid  = document.getElementById('products-grid');
-    const label = document.getElementById('cat-label');
-    const cat   = CATEGORIES.find(c => c.id === currentCat);
-    const prods = currentCat ? PRODUCTS.filter(p => p.category === currentCat) : [];
-
-    label.textContent = cat ? cat.label : '';
-
-    if (!currentCat || !prods.length) {
-      grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--white-dim)">אין מוצרים בקטגוריה זו</div>`;
-      return;
-    }
-
-    grid.innerHTML = prods.map((p, i) => {
-      const qty = cart[p.id] || 0;
-      return `
-        <article class="product-card ${p.vip ? 'vip-card' : ''}" role="listitem" style="animation-delay:${i * 0.05}s">
-          <div class="card-img-wrap">
-            <img
-              class="card-img"
-              src="${p.image}"
-              alt="${p.name}"
-              loading="lazy"
-              referrerpolicy="no-referrer"
-            />
-            ${p.badge ? `<div class="card-badge ${p.badge.includes('💎') || p.badge.includes('שבת') ? 'gold' : ''}">${p.badge}</div>` : ''}
-            ${p.vip ? `<div class="card-vip">VIP</div>` : ''}
-          </div>
-          <div class="card-body">
-            <div class="card-name">${p.name}</div>
-            <div class="card-desc">${p.description}</div>
-            <div class="card-price-row">
-              <span class="card-price">₪${p.price}</span>
-              <span class="card-unit">/ ${p.unit}</span>
-            </div>
-          </div>
-          <div class="card-controls">
-            <div class="qty-wrap">
-              <button class="qty-btn" onclick="changeQty('${p.id}', -1)" aria-label="הפחת">−</button>
-              <span class="qty-val" id="qty-${p.id}">${qty || 1}</span>
-              <button class="qty-btn" onclick="changeQty('${p.id}', 1)" aria-label="הוסף">+</button>
-            </div>
-            <button
-              class="add-btn ${qty > 0 ? 'added' : ''}"
-              id="add-btn-${p.id}"
-              onclick="addToCart('${p.id}')"
-            >${qty > 0 ? '✓ בסל' : '+ הוסף'}</button>
-          </div>
-        </article>
-      `;
-    }).join('');
-  }
-
-  // ─── Qty selector on product card ──────────────
-  function changeQty(id, delta) {
-    const el = document.getElementById(`qty-${id}`);
-    if (!el) return;
-
-    let v = parseInt(el.textContent) + delta;
-    if (v < 1) v = 1;
-    if (v > 20) v = 20;
-
-    el.textContent = v;
-
-    if (cart[id]) {
-      cart[id] = v;
-      updateCartUI();
-    }
-  }
-
-  // ─── Add to cart ───────────────────────────────
-  function addToCart(id) {
-    const prod = PRODUCTS.find(p => p.id === id);
-    if (!prod) return;
-
-    const qtyEl = document.getElementById(`qty-${id}`);
-    const qty   = qtyEl ? parseInt(qtyEl.textContent) : 1;
-
-    cart[id] = qty;
-    updateCartUI();
-
-    const btn = document.getElementById(`add-btn-${id}`);
-    if (btn) {
-      btn.textContent = '✓ בסל';
-      btn.classList.add('added');
-    }
-
-    showToast(`${prod.name} נוסף לסל ✓`);
-  }
-
-  // ─── Cart UI ───────────────────────────────────
-  function updateCartUI() {
-    const ids = Object.keys(cart).filter(id => cart[id] > 0);
-
-    const total = ids.reduce((sum, id) => {
-      const p = PRODUCTS.find(x => x.id === id);
-      return p ? sum + p.price * cart[id] : sum;
-    }, 0);
-
-    const count = ids.length;
-
-    const badge = document.getElementById('cart-badge');
-    const fab   = document.getElementById('cart-fab');
-    const label = document.getElementById('cart-fab-label');
-
-    if (count > 0) {
-      badge.textContent = count;
-      badge.classList.remove('hidden');
-      fab.classList.add('has-items');
-      label.textContent = `₪${total}`;
-    } else {
-      badge.classList.add('hidden');
-      fab.classList.remove('has-items');
-      label.textContent = 'סל';
-    }
-
-    document.getElementById('cart-total-display').textContent = `₪${total}`;
-  }
-
-  // ─── Cart drawer ───────────────────────────────
-  function openCart() {
-    renderCartItems();
-    document.getElementById('cart-overlay').classList.add('open');
-    document.getElementById('cart-drawer').classList.add('open');
-    document.body.style.overflow = 'hidden';
-  }
-
-  function closeCart() {
-    document.getElementById('cart-overlay').classList.remove('open');
-    document.getElementById('cart-drawer').classList.remove('open');
-    document.body.style.overflow = '';
-  }
-
-  function renderCartItems() {
-    const wrap = document.getElementById('cart-items');
-    const ids  = Object.keys(cart).filter(id => cart[id] > 0);
-
-    if (!ids.length) {
-      wrap.innerHTML = `
-        <div class="cart-empty">
-          <div class="cart-empty-icon">🛒</div>
-          <div class="cart-empty-txt">הסל ריק – הוסף מוצרים</div>
-        </div>
-      `;
-      return;
-    }
-
-    wrap.innerHTML = ids.map(id => {
-      const p = PRODUCTS.find(x => x.id === id);
-      if (!p) return '';
-
-      return `
-        <div class="cart-item">
-          <img class="ci-img" src="${p.image}" alt="${p.name}" loading="lazy" referrerpolicy="no-referrer" />
-          <div class="ci-info">
-            <div class="ci-name">${p.name}</div>
-            <div class="ci-price">₪${p.price} / ${p.unit}</div>
-          </div>
-          <div class="ci-qty-wrap">
-            <button class="ci-qty-btn" onclick="updateCartQty('${id}', -1)">−</button>
-            <span class="ci-qty-val">${cart[id]}</span>
-            <button class="ci-qty-btn" onclick="updateCartQty('${id}', 1)">+</button>
-          </div>
-        </div>
-      `;
-    }).join('');
-  }
-
-  function updateCartQty(id, delta) {
-    cart[id] = (cart[id] || 0) + delta;
-
-    if (cart[id] <= 0) {
-      delete cart[id];
-
-      const btn = document.getElementById(`add-btn-${id}`);
-      if (btn) {
-        btn.textContent = '+ הוסף';
-        btn.classList.remove('added');
-      }
-    }
-
-    updateCartUI();
-    renderCartItems();
-  }
-
-  // ─── Checkout ──────────────────────────────────
-  function goToCheckout() {
-    const ids = Object.keys(cart).filter(id => cart[id] > 0);
-
-    if (!ids.length) {
-      showToast('הסל ריק 🛒');
-      return;
-    }
-
-    closeCart();
-    renderOrderSummary();
-    loadSavedDetails();
-
-    document.getElementById('checkout-overlay').classList.add('open');
-    document.body.style.overflow = 'hidden';
-  }
-
-  function closeCheckout() {
-    document.getElementById('checkout-overlay').classList.remove('open');
-    document.body.style.overflow = '';
-  }
-
-  function renderOrderSummary() {
-    const box = document.getElementById('order-summary-box');
-    const ids = Object.keys(cart).filter(id => cart[id] > 0);
-
-    const total = ids.reduce((sum, id) => {
-      const p = PRODUCTS.find(x => x.id === id);
-      return p ? sum + p.price * cart[id] : sum;
-    }, 0);
-
-    box.innerHTML = `
-      <div class="osb-title">פריטים</div>
-      ${ids.map(id => {
-        const p = PRODUCTS.find(x => x.id === id);
-        if (!p) return '';
-        return `<div class="osb-row"><span class="osb-name">${p.name}</span><span class="osb-qty">×${cart[id]} — ₪${p.price * cart[id]}</span></div>`;
-      }).join('')}
-      <div class="osb-total-row">
-        <span class="osb-total-label">סה״כ משוער</span>
-        <span class="osb-total-val">₪${total}</span>
-      </div>
-    `;
-  }
-
-  function selectOrderType(type) {
-    orderType = type;
-    document.getElementById('btn-type-pickup').classList.toggle('selected', type === 'pickup');
-    document.getElementById('btn-type-delivery').classList.toggle('selected', type === 'delivery');
-  }
-
-  // ─── LocalStorage ──────────────────────────────
-  function saveDetails() {
-    const d = {
-      name:  document.getElementById('f-name').value,
-      phone: document.getElementById('f-phone').value,
-      city:  document.getElementById('f-city').value,
-    };
-
-    try {
-      localStorage.setItem('eitan_customer', JSON.stringify(d));
-    } catch(e) {}
-  }
-
-  function loadSavedDetails() {
-    try {
-      const d = JSON.parse(localStorage.getItem('eitan_customer') || '{}');
-
-      if (d.name)  document.getElementById('f-name').value  = d.name;
-      if (d.phone) document.getElementById('f-phone').value = d.phone;
-      if (d.city)  document.getElementById('f-city').value  = d.city;
-    } catch(e) {}
-  }
-
-  // ─── Build order data object ───────────────────
-  function buildOrderData(name, phone, city, notes, marketingConsent = false) {
-    const ids = Object.keys(cart).filter(id => cart[id] > 0);
-    const items = ids.map(id => {
-      const p = PRODUCTS.find(x => x.id === id);
-      return {
-        id:        p.id,
-        name:      p.name,
-        quantity:  cart[id],
-        unit:      p.unit,
-        price:     p.price,
-        lineTotal: p.price * cart[id]
-      };
-    });
-    const total = items.reduce((s, i) => s + i.lineTotal, 0);
-    return {
-      customer: { name, phone, city,
-        orderType: orderType === 'pickup' ? 'איסוף עצמי' : 'משלוח',
-        notes,
-        marketingConsent
-      },
-      items,
-      total,
-      createdAt: new Date().toISOString()
-    };
-  }
-
-  // ─── Send order through Render server ────────
-  async function sendToDrive(orderData) {
-    try {
-      console.log("שולח לשרת Render:", orderData);
-
-      const response = await fetch(`${API_BASE}/order`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(orderData)
-      });
-
-      if (!response.ok) {
-        throw new Error('Server returned ' + response.status);
-      }
-
-      console.log("הבקשה נשלחה לשרת Render");
-      return true;
-
-    } catch (err) {
-      console.error('שגיאה בשליחה לשרת:', err);
-      return false;
-    }
-  }
-
-  // ─── Print-to-PDF (Hebrew support) ─────────────
-  function downloadPDF(orderData) {
-    const c    = orderData.customer;
-    const now  = new Date(orderData.createdAt);
-    const dateStr = now.toLocaleString('he-IL', { timeZone: 'Asia/Jerusalem' });
-
-    const itemsRows = orderData.items.map((item, i) => `
-      <tr style="background:${i % 2 === 0 ? '#ffffff' : '#faf7f3'}">
-        <td>${item.name}</td>
-        <td style="text-align:center">${item.quantity}</td>
-        <td style="text-align:center">${item.unit}</td>
-        <td style="text-align:center">₪${item.price}</td>
-        <td style="text-align:center;font-weight:700">₪${item.lineTotal}</td>
-      </tr>`).join('');
-
-    const notesHtml = c.notes
-      ? `<div class="section-label">הערות</div>
-         <div class="notes-box">${c.notes}</div>`
-      : '';
-
-    const html = `<!DOCTYPE html>
-<html dir="rtl" lang="he">
-<head>
-  <meta charset="UTF-8"/>
-  <title>הזמנה – ${c.name}</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;900&display=swap');
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Heebo', Arial, sans-serif;
-      background: #fff;
-      color: #111;
-      direction: rtl;
-    }
-    .header {
-      background: #8b1a1a;
-      padding: 22px 32px;
-      text-align: center;
-    }
-    .header h1 { color: #c9983a; font-size: 26px; font-weight: 900; margin-bottom: 4px; }
-    .header p  { color: #c8bfb0; font-size: 13px; }
-    .body { padding: 24px 32px; }
-    .date { text-align: center; color: #888; font-size: 13px; margin-bottom: 20px; }
-    .section-label {
-      font-size: 11px; font-weight: 700; color: #8b1a1a;
-      letter-spacing: 1px; text-transform: uppercase;
-      margin: 18px 0 8px;
-    }
-    .info-box {
-      background: #f7f3ee; border: 1px solid #e0d4c0;
-      border-radius: 8px; padding: 14px 18px;
-      display: flex; gap: 24px; flex-wrap: wrap;
-    }
-    .info-box span { font-size: 14px; }
-    .info-box b { color: #111; }
-    table { width: 100%; border-collapse: collapse; margin-top: 4px; }
-    thead { background: #8b1a1a; }
-    thead th {
-      padding: 10px 12px; color: #c9983a;
-      text-align: right; font-size: 13px;
-    }
-    tbody td { padding: 9px 12px; border-bottom: 1px solid #eee; font-size: 13px; }
-    .total-row td {
-      background: #8b1a1a !important; color: #fff;
-      font-weight: 900; font-size: 15px; padding: 12px;
-    }
-    .price-note { font-size: 11px; color: #888; margin-top: 6px; }
-    .notes-box {
-      background: #fffbe6; border: 1px solid #e0d4c0;
-      border-radius: 6px; padding: 10px 14px;
-      font-size: 13px; color: #555;
-    }
-    .footer {
-      margin-top: 32px; text-align: center;
-      font-size: 11px; color: #999;
-      border-top: 1px solid #eee; padding: 14px;
-    }
-    @media print {
-      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      .no-print { display: none; }
-    }
-  </style>
-</head>
-<body>
-  <div class="header">
-    <h1>איתן מעדני בשר</h1>
-    <p>Eitan Meat Delicacies · Eilat · Premium Butcher</p>
-  </div>
-  <div class="body">
-    <div class="date">${dateStr}</div>
-
-    <div class="section-label">פרטי לקוח</div>
-    <div class="info-box">
-      <span><b>שם:</b> ${c.name}</span>
-      <span><b>טלפון:</b> ${c.phone}</span>
-      <span><b>עיר:</b> ${c.city}</span>
-      <span><b>סוג הזמנה:</b> ${c.orderType}</span>
-    </div>
-
-    <div class="section-label">פריטים</div>
-    <table>
-      <thead>
-        <tr>
-          <th>מוצר</th>
-          <th style="text-align:center">כמות</th>
-          <th style="text-align:center">יחידה</th>
-          <th style="text-align:center">מחיר</th>
-          <th style="text-align:center">סה"כ</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${itemsRows}
-        <tr class="total-row">
-          <td colspan="4">סה"כ משוער</td>
-          <td style="text-align:center">₪${orderData.total}</td>
-        </tr>
-      </tbody>
-    </table>
-    <p class="price-note">* המחיר הסופי נקבע לאחר שקילה בפועל</p>
-
-    ${notesHtml}
-
-    <div class="footer">איתן מעדני בשר · אילת · תודה על ההזמנה!</div>
-  </div>
-
-  <script>
-    window.onload = function() {
-      window.print();
-      setTimeout(function() { window.close(); }, 1000);
-    };
-  <\/script>
-</body>
-</html>`;
-
-    const win = window.open('', '_blank', 'width=800,height=900');
-    if (win) {
-      win.document.write(html);
-      win.document.close();
-    } else {
-      showToast('אפשר לפתיחת חלון חדש בדפדפן ⚠️');
-    }
-  }
-
-  // ─── Main: PDF + Drive ──────────────────────────
-  async function generateOrderPDF() {
-    const name  = document.getElementById('f-name').value.trim();
-    const phone = document.getElementById('f-phone').value.trim();
-    const city  = document.getElementById('f-city').value.trim();
-    const notes = document.getElementById('f-notes').value.trim();
-    const marketingConsent = document.getElementById('f-marketing-consent')?.checked || false;
-
-    if (!name || !phone || !city) {
-      showToast('נא למלא שם, טלפון ועיר ⚠️');
-      return;
-    }
-
-    const ids = Object.keys(cart).filter(id => cart[id] > 0);
-    if (!ids.length) { showToast('הסל ריק 🛒'); return; }
-
-    saveDetails();
-
-    const btn     = document.querySelector('.whatsapp-btn');
-    const oldHTML = btn.innerHTML;
-    btn.innerHTML = '<span class="wa-icon">⏳</span> שולח ומכין...';
-    btn.disabled  = true;
-
-    try {
-      const orderData = buildOrderData(name, phone, city, notes, marketingConsent);
-
-      // קודם שולח ל-Apps Script / Drive
-      await sendToDrive(orderData);
-
-      // רק אחרי השליחה פותח PDF מקומי להדפסה
-      downloadPDF(orderData);
-
-      closeCheckout();
-      showSuccess();
-
-    } catch (err) {
-      console.error(err);
-      showToast('שגיאה ביצירת ה-PDF ⚠️');
-    } finally {
-      btn.innerHTML = oldHTML;
-      btn.disabled  = false;
-    }
-  }
-
-  function showSuccess() {
-    document.getElementById('success-screen').classList.add('open');
-  }
-
-  function resetOrder() {
-    Object.keys(cart).forEach(k => delete cart[k]);
-
-    updateCartUI();
-    renderProducts();
-
-    document.getElementById('success-screen').classList.remove('open');
-    document.body.style.overflow = '';
-  }
-
-  // ─── Toast ─────────────────────────────────────
-  let toastTimer;
-
-  function showToast(msg) {
-    const t = document.getElementById('toast');
-
-    t.textContent = msg;
-    t.classList.add('show');
-
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
-  }
-
-
-  // ─── Accessibility ─────────────────────────────
-  function toggleAccessibilityPanel() {
-    const panel = document.getElementById('accessibility-panel');
-    panel.classList.toggle('open');
-  }
-
-  function persistA11ySettings() {
-    const classes = ['a11y-large', 'a11y-larger', 'a11y-contrast', 'a11y-readable', 'a11y-links']
-      .filter(cls => document.body.classList.contains(cls));
-
-    try {
-      localStorage.setItem('eitan_a11y_classes', JSON.stringify(classes));
-    } catch (e) {}
-  }
-
-  function loadA11ySettings() {
-    try {
-      const classes = JSON.parse(localStorage.getItem('eitan_a11y_classes') || '[]');
-      classes.forEach(cls => document.body.classList.add(cls));
-    } catch (e) {}
-  }
-
-  function setTextSize(size) {
-    document.body.classList.remove('a11y-large', 'a11y-larger');
-
-    if (size === 'large') {
-      document.body.classList.add('a11y-large');
-    }
-
-    if (size === 'larger') {
-      document.body.classList.add('a11y-larger');
-    }
-
-    persistA11ySettings();
-  }
-
-  function toggleA11yClass(cls) {
-    document.body.classList.toggle(cls);
-    persistA11ySettings();
-  }
-
-  function resetAccessibility() {
-    document.body.classList.remove('a11y-large', 'a11y-larger', 'a11y-contrast', 'a11y-readable', 'a11y-links');
-    try {
-      localStorage.removeItem('eitan_a11y_classes');
-    } catch (e) {}
-  }
-
-  // ─── INIT ──────────────────────────────────────
-  loadA11ySettings();
-  checkOrderStatus();
-  loadProducts();
-</script>
-
-</body>
-</html>
+// ============================================================
+// EITAN MEAT DELICACIES - PRODUCTS DATA
+// Edit this file to update products, prices, and categories
+// ============================================================
+
+const BUSINESS_CONFIG = {
+  name: "איתן מעדני בשר",
+  nameEn: "Eitan Meat Delicacies",
+  phone: "972501234567", // ← CHANGE THIS to the real WhatsApp number (no + or spaces)
+  location: "אילת",
+  orderCutoffDay: 2,    // 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
+  orderCutoffHour: 12,  // 12 = noon
+  deliveryDay: "חמישי", // Display name for delivery day
+  deliveryNote: "משלוחים כל יום חמישי לאזור הערבה ואילת",
+};
+
+const CATEGORIES = [
+  { id: "beef",    label: "🥩 בקר",                      icon: "🥩" },
+  { id: "chicken", label: "🍗 עוף",                      icon: "🍗" },
+  { id: "kabab",   label: "🔥 קבבים / טחונים / נקניקיות", icon: "🔥" },
+  { id: "deals",   label: "⚡ מבצעים",                    icon: "⚡" },
+  { id: "bundles", label: "📦 מארזים",                    icon: "📦" },
+];
+
+const PRODUCTS = [
+  // ─── בקר ───────────────────────────────────────────────
+  {
+    id: "entrecote",
+    category: "beef",
+    name: "אנטריקוט פרמיום",
+    description: "חתך קלאסי, שיש עשיר, מושלם לגריל",
+    price: 189,
+    unit: "ק\"ג",
+    image: "https://images.unsplash.com/photo-1588347818036-539ce8dc2b93?w=600&q=80",
+    vip: true,
+    badge: null,
+  },
+  {
+    id: "ribeye",
+    category: "beef",
+    name: "ריב-איי (צלעות)",
+    description: "עם עצם, עסיסי ועשיר בטעם",
+    price: 209,
+    unit: "ק\"ג",
+    image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=600&q=80",
+    vip: true,
+    badge: null,
+  },
+  {
+    id: "sirloin",
+    category: "beef",
+    name: "סינטה",
+    description: "רזה ועדין, מתאים לשניצל או גריל",
+    price: 149,
+    unit: "ק\"ג",
+    image: "https://images.unsplash.com/photo-1529694157872-4e0c0f3b238b?w=600&q=80",
+    vip: false,
+    badge: null,
+  },
+  {
+    id: "brisket",
+    category: "beef",
+    name: "חזה בקר (ברישקט)",
+    description: "לעישון ארוך, מתפרק ומלא טעם",
+    price: 99,
+    unit: "ק\"ג",
+    image: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=600&q=80",
+    vip: false,
+    badge: null,
+  },
+  {
+    id: "flank",
+    category: "beef",
+    name: "פלנק סטייק",
+    description: "סיבי, עשיר בטעם בשרי אותנטי",
+    price: 139,
+    unit: "ק\"ג",
+    image: "https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=600&q=80",
+    vip: false,
+    badge: null,
+  },
+  {
+    id: "tomahawk",
+    category: "beef",
+    name: "טומהוק 1.2 ק\"ג",
+    description: "הצלע הגדולה – מלכת הגריל",
+    price: 299,
+    unit: "יחידה",
+    image: "https://images.unsplash.com/photo-1544025162-d76594f0fc5b?w=600&q=80",
+    vip: true,
+    badge: "🔥 חם",
+  },
+{
+  id: "kobiut-asado",
+  category: "beef",
+  name: "קוביות אסאדו",
+  description: "קוביות אסאדו איכותיות לבישול ארוך, קדירה, חמין ותבשילים עשירים",
+  price: 99,
+  unit: "ק\"ג",
+  image: "image/kobiut-asado.jpeg",
+  vip: false,
+  badge: "חדש",
+},
+  // ─── עוף ────────────────────────────────────────────────
+  {
+    id: "chicken-breast",
+    category: "chicken",
+    name: "חזה עוף טרי",
+    description: "נקי, ללא עצמות, מוכן לבישול",
+    price: 42,
+    unit: "ק\"ג",
+    image: "https://images.unsplash.com/photo-1604503468506-a8da13d82791?w=600&q=80",
+    vip: false,
+    badge: null,
+  },
+  {
+    id: "chicken-thighs",
+    category: "chicken",
+    name: "ירכיים עוף עם עצם",
+    description: "עסיסי, מושלם לגריל ולתנור",
+    price: 36,
+    unit: "ק\"ג",
+    image: "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=600&q=80",
+    vip: false,
+    badge: null,
+  },
+  {
+    id: "whole-chicken",
+    category: "chicken",
+    name: "עוף שלם טרי",
+    description: "עוף כפרי, גדול ואיכותי",
+    price: 38,
+    unit: "ק\"ג",
+    image: "https://images.unsplash.com/photo-1587593810167-a84920ea0781?w=600&q=80",
+    vip: false,
+    badge: null,
+  },
+  {
+    id: "chicken-wings",
+    category: "chicken",
+    name: "כנפיים עוף",
+    description: "קריספי על הגריל, אהוב על כולם",
+    price: 32,
+    unit: "ק\"ג",
+    image: "https://images.unsplash.com/photo-1527477396000-e27163b481c2?w=600&q=80",
+    vip: false,
+    badge: null,
+  },
+
+  // ─── קבבים / טחונים / נקניקיות ─────────────────────────
+  {
+    id: "kebab-beef",
+    category: "kabab",
+    name: "קבב בקר",
+    description: "קבב ביתי, תבלינים מיוחדים",
+    price: 89,
+    unit: "ק\"ג",
+    image: "https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?w=600&q=80",
+    vip: false,
+    badge: null,
+  },
+  {
+    id: "kebab-lamb",
+    category: "kabab",
+    name: "קבב טלה",
+    description: "טעם מזרחי עמוק, רך ועסיסי",
+    price: 109,
+    unit: "ק\"ג",
+    image: "https://images.unsplash.com/photo-1529042410759-befb1204b468?w=600&q=80",
+    vip: true,
+    badge: null,
+  },
+  {
+    id: "ground-beef",
+    category: "kabab",
+    name: "טחון בקר 20%",
+    description: "מאזן שומן מושלם לבורגר וקציצות",
+    price: 69,
+    unit: "ק\"ג",
+    image: "https://images.unsplash.com/photo-1603360946369-dc9bb6258143?w=600&q=80",
+    vip: false,
+    badge: null,
+  },
+  {
+    id: "merguez",
+    category: "kabab",
+    name: "מרגז חריף",
+    description: "נקניקיות צפון אפריקאיות, חריף וריחני",
+    price: 79,
+    unit: "ק\"ג",
+    image: "https://images.unsplash.com/photo-1558030006-450675393462?w=600&q=80",
+    vip: false,
+    badge: null,
+  },
+  {
+    id: "hot-dog",
+    category: "kabab",
+    name: "נקניקיות ארוזות",
+    description: "לנחיצה המהירה, פחם ובית",
+    price: 49,
+    unit: "חבילה",
+    image: "https://images.unsplash.com/photo-1612392061787-2a0c2b3c5e44?w=600&q=80",
+    vip: false,
+    badge: null,
+  },
+
+  // ─── מבצעים ─────────────────────────────────────────────
+  {
+    id: "deal-grill-pack",
+    category: "deals",
+    name: "מארז גריל משפחתי",
+    description: "אנטריקוט + קבב + כנפיים – הכל למנגל מושלם",
+    price: 349,
+    unit: "מארז 3 ק\"ג",
+    image: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=600&q=80",
+    vip: false,
+    badge: "💥 מבצע",
+  },
+  {
+    id: "deal-steak3",
+    category: "deals",
+    name: "3 אנטריקוט במחיר 2",
+    description: "קנה 3 יחידות, שלם על 2",
+    price: 329,
+    unit: "3 יחידות",
+    image: "https://images.unsplash.com/photo-1588347818036-539ce8dc2b93?w=600&q=80",
+    vip: false,
+    badge: "🎯 דיל",
+  },
+
+  // ─── מארזים ─────────────────────────────────────────────
+  {
+    id: "bundle-shabbat",
+    category: "bundles",
+    name: "מארז שבת",
+    description: "עוף שלם + ירכיים + חזה – לשולחן שבת מלכותי",
+    price: 199,
+    unit: "מארז ~4 ק\"ג",
+    image: "https://images.unsplash.com/photo-1587593810167-a84920ea0781?w=600&q=80",
+    vip: false,
+    badge: "שבת",
+  },
+  {
+    id: "bundle-bbq",
+    category: "bundles",
+    name: "מארז BBQ פרימיום",
+    description: "ריב-איי + פלנק + קבב בקר",
+    price: 449,
+    unit: "מארז ~5 ק\"ג",
+    image: "https://images.unsplash.com/photo-1544025162-d76594f0fc5b?w=600&q=80",
+    vip: true,
+    badge: "💎 פרמיום",
+  },
+  {
+    id: "bundle-weekly",
+    category: "bundles",
+    name: "מארז שבועי למשפחה",
+    description: "מגוון חתכים לכל ארוחות השבוע",
+    price: 599,
+    unit: "מארז ~8 ק\"ג",
+    image: "https://images.unsplash.com/photo-1529694157872-4e0c0f3b238b?w=600&q=80",
+    vip: false,
+    badge: "🏠 משפחתי",
+  },
+];
