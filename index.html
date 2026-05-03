@@ -1211,7 +1211,7 @@
 
 <!-- APP LOGIC -->
 <script>
-  // ─── Business config + products from Google Sheets ───
+  // ─── Business config + API server ───
   const BUSINESS_CONFIG = {
     name: "איתן מעדני בשר",
     nameEn: "Eitan Meat Delicacies",
@@ -1223,7 +1223,7 @@
     deliveryNote: "משלוחים כל יום חמישי לאזור הערבה ואילת",
   };
 
-  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw6J3nM5zox75ZZ8T-86_tLF3WFf0bZ6lWQaucdtn1b4h0VKvCSCHve0yg5ikN4hci0IA/exec";
+  const API_BASE = "https://eitan-meat-ordering.onrender.com";
 
   let PRODUCTS = [];
   let CATEGORIES = [];
@@ -1241,7 +1241,7 @@
       label.textContent = 'טוען מוצרים...';
       grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--white-dim)">טוען מחירון מהמערכת...</div>`;
 
-      const res = await fetch(GOOGLE_SCRIPT_URL, { method: 'GET' });
+      const res = await fetch(`${API_BASE}/products`, { method: 'GET' });
       const json = await res.json();
 
       if (!json.success || !Array.isArray(json.products)) {
@@ -1639,25 +1639,28 @@
     };
   }
 
-  // ─── Send to Google Drive (Apps Script) ────────
+  // ─── Send order through Render server ────────
   async function sendToDrive(orderData) {
     try {
-      console.log("שולח ל-Apps Script:", orderData);
+      console.log("שולח לשרת Render:", orderData);
 
-      await fetch(GOOGLE_SCRIPT_URL, {
+      const response = await fetch(`${API_BASE}/order`, {
         method: 'POST',
-        mode: 'no-cors',
         headers: {
-          'Content-Type': 'text/plain;charset=utf-8'
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify(orderData)
       });
 
-      console.log("הבקשה נשלחה ל-Apps Script");
+      if (!response.ok) {
+        throw new Error('Server returned ' + response.status);
+      }
+
+      console.log("הבקשה נשלחה לשרת Render");
       return true;
 
     } catch (err) {
-      console.error('שגיאה בשליחה ל-Drive:', err);
+      console.error('שגיאה בשליחה לשרת:', err);
       return false;
     }
   }
