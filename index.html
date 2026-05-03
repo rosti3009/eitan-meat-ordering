@@ -421,6 +421,29 @@
       text-align: center;
       color: var(--white);
     }
+    .qty-input {
+      width: 58px;
+      height: 30px;
+      background: var(--black-5);
+      color: var(--white);
+      border: 1px solid var(--border-dim);
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 700;
+      text-align: center;
+      direction: ltr;
+      -moz-appearance: textfield;
+    }
+    .qty-input::-webkit-outer-spin-button,
+    .qty-input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    .qty-unit-label {
+      font-size: 11px;
+      color: var(--white-dim);
+      white-space: nowrap;
+    }
     .add-btn {
       flex: 1;
       background: var(--red);
@@ -1119,6 +1142,41 @@
     return "https://images.unsplash.com/photo-1588347818036-539ce8dc2b93?w=600&q=80";
   }
 
+  function isKgUnit(unit) {
+    const u = String(unit || '').replace('״', '"');
+    return u.includes('ק"ג') || u.includes('קג') || u.includes('kg') || u.includes('KG');
+  }
+
+  function getQtyStep(product) {
+    return isKgUnit(product?.unit) ? 0.1 : 1;
+  }
+
+  function getMinQty(product) {
+    return isKgUnit(product?.unit) ? 0.1 : 1;
+  }
+
+  function formatQty(qty) {
+    const n = Number(qty) || 0;
+    return Number.isInteger(n) ? String(n) : String(Number(n.toFixed(2)));
+  }
+
+  function normalizeQty(value, product) {
+    const min = getMinQty(product);
+    const step = getQtyStep(product);
+    let qty = Number(value);
+
+    if (!qty || qty < min) qty = min;
+    if (!isKgUnit(product?.unit)) qty = Math.round(qty);
+
+    qty = Math.round(qty / step) * step;
+    return Number(qty.toFixed(2));
+  }
+
+  function formatMoney(value) {
+    const n = Number(value) || 0;
+    return Number.isInteger(n) ? String(n) : n.toFixed(2);
+  }
+
   // ─── Order Status ───────────────────────────────
   function checkOrderStatus() {
     const now = new Date();
@@ -1188,7 +1246,7 @@
               src="${p.image}"
               alt="${p.name}"
               loading="lazy"
-              referrerpolicy="no-referrer"
+              onerror="this.src='https://images.unsplash.com/photo-1529694157872-4e0c0f3b238b?w=400&q=60'"
             />
             ${p.badge ? `<div class="card-badge ${p.badge.includes('💎') || p.badge.includes('שבת') ? 'gold' : ''}">${p.badge}</div>` : ''}
             ${p.vip ? `<div class="card-vip">VIP</div>` : ''}
@@ -1197,21 +1255,29 @@
             <div class="card-name">${p.name}</div>
             <div class="card-desc">${p.description}</div>
             <div class="card-price-row">
-              <span class="card-price">₪${p.price}</span>
+              <span class="card-price">₪${formatMoney(p.price)}</span>
               <span class="card-unit">/ ${p.unit}</span>
             </div>
           </div>
           <div class="card-controls">
-            <div class="qty-wrap">
-              <button class="qty-btn" onclick="changeQty('${p.id}', -1)" aria-label="הפחת">−</button>
-              <span class="qty-val" id="qty-${p.id}">${qty || 1}</span>
-              <button class="qty-btn" onclick="changeQty('${p.id}', 1)" aria-label="הוסף">+</button>
+            <div class="qty-wrap" style="padding:0 6px; gap:6px;">
+              <input
+                class="qty-input"
+                id="qty-${p.id}"
+                type="number"
+                min="${getMinQty(p)}"
+                step="${getQtyStep(p)}"
+                value="${formatQty(qty || getMinQty(p))}"
+                inputmode="decimal"
+                aria-label="כמות להזמנה"
+              />
+              <span class="qty-unit-label">${p.unit}</span>
             </div>
             <button
               class="add-btn ${qty > 0 ? 'added' : ''}"
               id="add-btn-${p.id}"
               onclick="addToCart('${p.id}')"
-            >${qty > 0 ? '✓ בסל' : '+ הוסף'}</button>
+            >${qty > 0 ? '✓ עדכן' : '+ הוסף'}</button>
           </div>
         </article>
       `;
@@ -1220,17 +1286,20 @@
 
   // ─── Qty selector on product card ──────────────
   function changeQty(id, delta) {
+    const prod = PRODUCTS.find(p => p.id === id);
+    if (!prod) return;
+
     const el = document.getElementById(`qty-${id}`);
     if (!el) return;
 
-    let v = parseInt(el.textContent) + delta;
-    if (v < 1) v = 1;
-    if (v > 20) v = 20;
+    const current = el.value !== undefined ? Number(el.value) : Number(el.textContent);
+    const next = normalizeQty(current + delta * getQtyStep(prod), prod);
 
-    el.textContent = v;
+    if (el.value !== undefined) el.value = formatQty(next);
+    else el.textContent = formatQty(next);
 
     if (cart[id]) {
-      cart[id] = v;
+      cart[id] = next;
       updateCartUI();
     }
   }
@@ -1241,7 +1310,15 @@
     if (!prod) return;
 
     const qtyEl = document.getElementById(`qty-${id}`);
-    const qty   = qtyEl ? parseInt(qtyEl.textContent) : 1;
+    const rawQty = qtyEl ? (qtyEl.value !== undefined ? qtyEl.value : qtyEl.textContent) : getMinQty(prod);
+    const qty = normalizeQty(rawQty, prod);
+
+    if (!qty || qty <= 0) {
+      showToast('נא להזין כמות תקינה ⚠️');
+      return;
+    }
+
+    if (qtyEl && qtyEl.value !== undefined) qtyEl.value = formatQty(qty);
 
     cart[id] = qty;
     updateCartUI();
@@ -1274,14 +1351,14 @@
       badge.textContent = count;
       badge.classList.remove('hidden');
       fab.classList.add('has-items');
-      label.textContent = `₪${total}`;
+      label.textContent = `₪${formatMoney(total)}`;
     } else {
       badge.classList.add('hidden');
       fab.classList.remove('has-items');
       label.textContent = 'סל';
     }
 
-    document.getElementById('cart-total-display').textContent = `₪${total}`;
+    document.getElementById('cart-total-display').textContent = `₪${formatMoney(total)}`;
   }
 
   // ─── Cart drawer ───────────────────────────────
@@ -1318,14 +1395,15 @@
 
       return `
         <div class="cart-item">
-          <img class="ci-img" src="${p.image}" alt="${p.name}" loading="lazy" referrerpolicy="no-referrer" />
+          <img class="ci-img" src="${p.image}" alt="${p.name}" loading="lazy"
+            onerror="this.src='https://images.unsplash.com/photo-1529694157872-4e0c0f3b238b?w=100&q=60'" />
           <div class="ci-info">
             <div class="ci-name">${p.name}</div>
-            <div class="ci-price">₪${p.price} / ${p.unit}</div>
+            <div class="ci-price">₪${formatMoney(p.price)} / ${p.unit}</div>
           </div>
           <div class="ci-qty-wrap">
             <button class="ci-qty-btn" onclick="updateCartQty('${id}', -1)">−</button>
-            <span class="ci-qty-val">${cart[id]}</span>
+            <span class="ci-qty-val">${formatQty(cart[id])}</span>
             <button class="ci-qty-btn" onclick="updateCartQty('${id}', 1)">+</button>
           </div>
         </div>
@@ -1334,9 +1412,13 @@
   }
 
   function updateCartQty(id, delta) {
-    cart[id] = (cart[id] || 0) + delta;
+    const prod = PRODUCTS.find(p => p.id === id);
+    if (!prod) return;
 
-    if (cart[id] <= 0) {
+    const step = getQtyStep(prod);
+    const next = normalizeQty((cart[id] || 0) + delta * step, prod);
+
+    if (next < getMinQty(prod)) {
       delete cart[id];
 
       const btn = document.getElementById(`add-btn-${id}`);
@@ -1344,10 +1426,13 @@
         btn.textContent = '+ הוסף';
         btn.classList.remove('added');
       }
+    } else {
+      cart[id] = next;
     }
 
     updateCartUI();
     renderCartItems();
+    renderProducts();
   }
 
   // ─── Checkout ──────────────────────────────────
@@ -1386,7 +1471,7 @@
       ${ids.map(id => {
         const p = PRODUCTS.find(x => x.id === id);
         if (!p) return '';
-        return `<div class="osb-row"><span class="osb-name">${p.name}</span><span class="osb-qty">×${cart[id]} — ₪${p.price * cart[id]}</span></div>`;
+        return `<div class="osb-row"><span class="osb-name">${p.name}</span><span class="osb-qty">×${cart[id]} — ₪${formatMoney(p.price * cart[id])}</span></div>`;
       }).join('')}
       <div class="osb-total-row">
         <span class="osb-total-label">סה״כ משוער</span>
@@ -1435,7 +1520,7 @@
         quantity:  cart[id],
         unit:      p.unit,
         price:     p.price,
-        lineTotal: p.price * cart[id]
+        lineTotal: Number((p.price * cart[id]).toFixed(2))
       };
     });
     const total = items.reduce((s, i) => s + i.lineTotal, 0);
@@ -1482,10 +1567,10 @@
     const itemsRows = orderData.items.map((item, i) => `
       <tr style="background:${i % 2 === 0 ? '#ffffff' : '#faf7f3'}">
         <td>${item.name}</td>
-        <td style="text-align:center">${item.quantity}</td>
+        <td style="text-align:center">${formatQty(item.quantity)}</td>
         <td style="text-align:center">${item.unit}</td>
-        <td style="text-align:center">₪${item.price}</td>
-        <td style="text-align:center;font-weight:700">₪${item.lineTotal}</td>
+        <td style="text-align:center">₪${formatMoney(item.price)}</td>
+        <td style="text-align:center;font-weight:700">₪${formatMoney(item.lineTotal)}</td>
       </tr>`).join('');
 
     const notesHtml = c.notes
@@ -1587,7 +1672,7 @@
         ${itemsRows}
         <tr class="total-row">
           <td colspan="4">סה"כ משוער</td>
-          <td style="text-align:center">₪${orderData.total}</td>
+          <td style="text-align:center">₪${formatMoney(orderData.total)}</td>
         </tr>
       </tbody>
     </table>
